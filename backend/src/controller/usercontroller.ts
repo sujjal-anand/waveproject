@@ -590,8 +590,8 @@ export const addComment = async (req: any, res: any) => {
 export const getFriendsList = async (req: any, res: any) => {
   try {
     const { id } = req.user; // Extract user ID from request (assumes middleware sets `req.user`)
-
-    // Fetch friends where the user is either sender or receiver
+    const search = req.query.search;
+    console.log(search)    // Fetch friends where the user is either sender or receiver
     const friends = await Friends.findAll({
       where: {
         [Op.or]: [{ senderfriendId: id }, { receiverfriendId: id }],

@@ -354,7 +354,7 @@ const Preferences = () => {
                       <label className="form-check-label">ft/inches</label>
                     </div>
                   </div>
-                  <Field type="text" placeholder="Height" name="height" />
+                  <Field type="number" placeholder="Height" name="height" />
                   <ErrorMessage name="height" component="div" />
                 </div>
               </div>

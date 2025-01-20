@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import { Local } from "../environment/env";
@@ -30,6 +30,8 @@ const Createwave = () => {
       navigate("/login");
     }
   }, []);
+
+  const[search,setSearch]=useState<any>("")
   const token = localStorage.getItem("token");
 
   const { data, isLoading, isError, error } = useQuery({
@@ -257,6 +259,9 @@ const Createwave = () => {
                 placeholder="Search"
                 className="w-100 form-control border-0 rounded-5 ps-2"
                 id="searchInput"
+                onChange={(e:any)=>{
+                setSearch(e.target.value)
+                }}
               />
               <button
                 type="button"

@@ -31,7 +31,7 @@ const Friends = () => {
     const token = localStorage.getItem("token");
     if (token) {
       const response = await api.get(
-        `${Local.GET_FRIENDS_LIST}/${searchTerm}`,
+        `${Local.GET_FRIENDS_LIST}?search=${searchTerm}`,
         createAuthHeaders(token)
       );
       if (response.status !== 200) {
