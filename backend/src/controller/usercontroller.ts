@@ -65,8 +65,7 @@ export const login = async (req: any, res: any) => {
     // Generate JWT token
     const token = jwt.sign(
       { id: user.id, email: user.email, userStatus: user.userStatus },
-      jwtKey,
-      { expiresIn: "1h" }
+      jwtKey
     );
 
     // Send response with token
@@ -589,9 +588,11 @@ export const addComment = async (req: any, res: any) => {
 
 export const getFriendsList = async (req: any, res: any) => {
   try {
-    const { id } = req.user; // Extract user ID from request (assumes middleware sets `req.user`)
-    const search = req.query.search;
-    console.log(search)    // Fetch friends where the user is either sender or receiver
+    const { id } = req.user;
+    const search = req?.query?.search?.toLowerCase() || ""; // Convert search to lowercase for consistency
+    const order = req?.query?.sort || ""; // Default to an empty string if search is undefined
+
+    // Fetch all friends where the user is either the sender or receiver
     const friends = await Friends.findAll({
       where: {
         [Op.or]: [{ senderfriendId: id }, { receiverfriendId: id }],
@@ -606,22 +607,30 @@ export const getFriendsList = async (req: any, res: any) => {
           as: "receiver",
         },
       ],
+      order: [["createdAt", order]],
     });
 
-    // Format the response to return "opposite" friend details
-    const friendDetails = friends.map((friend) => {
-      if (friend.senderfriendId === id) {
-        return {
-          friend,
-        };
-      } else {
-        return {
-          friend,
-        };
-      }
+    // Filter results based on the search query
+    const filteredFriends = friends.filter((friend: any) => {
+      const sender = friend.sender;
+      const receiver = friend.receiver;
+
+      const matchSender =
+        sender &&
+        (sender.firstName?.toLowerCase().includes(search) ||
+          sender.lastName?.toLowerCase().includes(search) ||
+          sender.email?.toLowerCase().includes(search));
+
+      const matchReceiver =
+        receiver &&
+        (receiver.firstName?.toLowerCase().includes(search) ||
+          receiver.lastName?.toLowerCase().includes(search) ||
+          receiver.email?.toLowerCase().includes(search));
+
+      return matchSender || matchReceiver;
     });
 
-    return res.status(200).json({ success: true, friends: friendDetails });
+    return res.status(200).json({ success: true, friends: filteredFriends });
   } catch (error) {
     console.error("Error fetching friends list:", error);
     return res.status(500).json({ success: false, message: "Server error" });
@@ -719,6 +728,52 @@ export const acceptedFriend = async (req: any, res: any) => {
     return res.status(500).json({
       message: "An error occurred while fetching accepted friends",
       error,
+    });
+  }
+};
+
+export const getUserWaves = async (req: any, res: any) => {
+  try {
+    const { id } = req.user; // Extract user ID from the request object
+    const search = req?.query?.search || ""; // Default to an empty string if search is undefined
+
+    // Fetch waves where userId matches the extracted id and search filters are applied
+    const userWaves = await Waves.findAll({
+      where: {
+        userId: id,
+        ...(search && {
+          [Op.or]: [
+            { text: { [Op.like]: `%${search}%` } }, // Example field in Waves
+          ],
+        }),
+      },
+    });
+
+    // Fetch user details where search applies (e.g., name, email)
+    const user = await Users.findOne({
+      where: {
+        id: id,
+        ...(search && {
+          [Op.or]: [
+            { firstName: { [Op.like]: `%${search}%` } },
+            { lastName: { [Op.like]: `%${search}%` } },
+            { email: { [Op.like]: `%${search}%` } },
+          ],
+        }),
+      },
+    });
+
+    // Respond with the fetched data
+    res.status(200).json({
+      success: true,
+      data: userWaves,
+      user: user,
+    });
+  } catch (error) {
+    console.error("Error fetching waves:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch waves",
     });
   }
 };

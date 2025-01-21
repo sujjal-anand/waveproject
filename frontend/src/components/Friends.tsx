@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import api from "../api/axiosInstance";
 import { Local } from "../environment/env";
 import { createAuthHeaders } from "../utils/token";
+import { TfiReload } from "react-icons/tfi";
 
 const fetchUserDetail = async () => {
   const token = localStorage.getItem("token");
@@ -26,12 +27,14 @@ const Friends = () => {
       navigate("/login");
     }
   }, []);
-  const [searchTerm, setSearchTerm] = useState<any>("");
+  const [search, setSearch] = useState<any>("");
+  const [sort, setSort] = useState<any>("ASC");
+
   const fetchFriendsList = async () => {
     const token = localStorage.getItem("token");
     if (token) {
       const response = await api.get(
-        `${Local.GET_FRIENDS_LIST}?search=${searchTerm}`,
+        `${Local.GET_FRIENDS_LIST}?search=${search}&sort=${sort}`,
         createAuthHeaders(token)
       );
       if (response.status !== 200) {
@@ -43,7 +46,7 @@ const Friends = () => {
 
   const token = localStorage.getItem("token");
   const { data, isLoading, isError, error } = useQuery({
-    queryKey: ["fetchFriends"],
+    queryKey: ["fetchFriends", search, sort],
     queryFn: fetchFriendsList,
   });
 
@@ -114,8 +117,16 @@ const Friends = () => {
                 name="search_friend"
                 placeholder="search"
                 className="w-100 form-control border-0 rounded-5"
-                onChange={(e: any) => {
-                  setSearchTerm(e.target.value);
+                onKeyDown={(e: any) => {
+                  if (e.key == "Enter") {
+                    setSearch(e.target.value);
+                  }
+                }}
+              />
+              <TfiReload
+                className="me-1 mt-2"
+                onClick={() => {
+                  setSearch("");
                 }}
               />
             </div>
@@ -125,6 +136,9 @@ const Friends = () => {
               viewBox="0 0 44 44"
               fill="none"
               xmlns="http://www.w3.org/2000/svg"
+              onClick={() => {
+                setSort(sort == "ASC" ? "DESC" : "ASC");
+              }}
             >
               <path
                 d="M16 23H28V21H16V23ZM13 16V18H31V16H13ZM20 28H24V26H20V28Z"
@@ -162,12 +176,8 @@ const Friends = () => {
         <div className="row gx-0 bg-white p-1 py-3 rounded">
           {data.friends?.length > 0 ? (
             data?.friends?.map((friends: any, index: number) => {
-              const isSender =
-                userDetail.user.id === friends?.friend?.sender?.id;
-              const friendUser = isSender
-                ? friends?.friend?.receiver
-                : friends?.friend?.sender; // Determine if it's the sender or receiver
-              console.log(friendUser); // Log the correct friend user
+              const isSender = userDetail.user.id === friends?.sender?.id;
+              const friendUser = isSender ? friends?.receiver : friends?.sender; // Determine if it's the sender or receiver
 
               return (
                 <div

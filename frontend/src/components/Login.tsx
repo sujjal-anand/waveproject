@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import image from "../Assets/signup.png";
@@ -11,6 +11,11 @@ import { FaEye, FaEyeSlash } from "react-icons/fa"; // Import the icons
 
 const Login = () => {
   const navigate = useNavigate();
+  useEffect(() => {
+    if (localStorage.getItem("token")) {
+      navigate("/app/dashboard");
+    }
+  }, []);
   const [searchParams] = useSearchParams();
   const token = searchParams.get("token"); // Extract token from URL
   const [passwordVisible, setPasswordVisible] = useState(false); // State for password visibility

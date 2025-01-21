@@ -8,8 +8,15 @@ import { createAuthHeaders } from "../utils/token";
 import { toast } from "react-toastify";
 import CryptoJS from "crypto-js";
 import { useQuery } from "@tanstack/react-query";
+import { useEffect } from "react";
 
 const Preferences = () => {
+  const navigate = useNavigate();
+  useEffect(() => {
+    if (!localStorage.getItem("token")) {
+      navigate("/login");
+    }
+  }, []);
   const fetchUserDetail = async () => {
     const token = localStorage.getItem("token");
     if (token) {
@@ -57,8 +64,6 @@ const Preferences = () => {
   };
 
   const token = localStorage.getItem("token");
-
-  const navigate = useNavigate();
 
   const validationSchema = Yup.object({
     language: Yup.string().required("Language is required"),

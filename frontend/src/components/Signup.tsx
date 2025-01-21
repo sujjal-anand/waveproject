@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import image from "../Assets/signup.png";
@@ -31,6 +31,11 @@ const SignupSchema = Yup.object().shape({
 
 const Signup = () => {
   const navigate = useNavigate();
+  useEffect(() => {
+    if (localStorage.getItem("token")) {
+      navigate("/app/dashboard");
+    }
+  }, []);
   const [searchParams] = useSearchParams();
   const token = searchParams.get("token"); // Extract token from URL
 

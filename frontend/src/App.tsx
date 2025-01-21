@@ -19,11 +19,13 @@ import Createwave from "./components/Createwave";
 import Invitefriends from "./components/Invitefriends";
 import Changepassword from "./components/Changepassword";
 import Preferences from "./components/Preferences";
+import AutoLogOff from "./utils/autoLoggOff";
 
 const App: react.FC = () => {
   return (
     <>
       <BrowserRouter>
+        <AutoLogOff />
         <Routes>
           <Route path="/" element={<Signup />} />
           <Route path="/login" element={<Login />} />

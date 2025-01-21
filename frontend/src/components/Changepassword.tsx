@@ -124,7 +124,7 @@ const Changepassword = () => {
           display: "flex",
           alignItems: "center",
           marginBottom: "20px", // Adds spacing between the heading and the box
-          width: "100%", // Ensures alignment with the form box
+          width: "65%", // Ensures alignment with the form box
           maxWidth: "800px", // Optional: limit max width for better design
           marginRight: "355px",
         }}
@@ -153,13 +153,13 @@ const Changepassword = () => {
           borderRadius: "10px",
           padding: "20px",
           boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
-          width: "2064px", // Adjusted to take full available width
-          maxWidth: "1145px", // Optional: limit max width for better design
+          width: "100%", // Full available width of the parent container
+          maxWidth: "1200px", // Reduce the max width for the form container
           display: "flex", // Use flex to place the image and form next to each other
           alignItems: "flex-start",
         }}
       >
-        <div style={{ width: "60%", marginTop: "20px" }}>
+        <div style={{ width: "80%", marginTop: "20px" }}>
           <Formik
             initialValues={initialValues}
             validationSchema={validationSchema}

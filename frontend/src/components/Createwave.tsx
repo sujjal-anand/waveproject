@@ -6,8 +6,9 @@ import api from "../api/axiosInstance";
 import { createAuthHeaders } from "../utils/token";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
-import "../Styling/createwave.css";
+import "../Styling/Createwave.css";
 import { toast } from "react-toastify";
+import { TfiReload } from "react-icons/tfi";
 
 const fetchUserDetail = async () => {
   const token = localStorage.getItem("token");
@@ -24,6 +25,7 @@ const fetchUserDetail = async () => {
 };
 
 const Createwave = () => {
+  const [search, setSearch] = useState<any>("");
   const navigate = useNavigate();
   useEffect(() => {
     if (!localStorage.getItem("token")) {
@@ -31,14 +33,30 @@ const Createwave = () => {
     }
   }, []);
 
-  const[search,setSearch]=useState<any>("")
   const token = localStorage.getItem("token");
+  const fetchUserWaves = async () => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      const response = await api.get(
+        `${Local.GET_USER_WAVES}?search=${search}`,
+        createAuthHeaders(token)
+      );
+      if (response.status !== 200) {
+        throw new Error("Failed to fetch user details");
+      }
+      return response.data;
+    }
+  };
 
   const { data, isLoading, isError, error } = useQuery({
     queryKey: ["userDetail"],
     queryFn: fetchUserDetail,
   });
-
+  const { data: userWaves } = useQuery({
+    queryKey: ["userWaves", search],
+    queryFn: fetchUserWaves,
+  });
+  console.log(userWaves);
   const initialValues = {
     text: "",
     media: null,
@@ -59,8 +77,6 @@ const Createwave = () => {
   });
 
   const handleSubmit = async (values: any) => {
-    console.log("Form data:", values);
-
     const formData = new FormData();
     formData.append("text", values.text);
     if (values.media) {
@@ -74,8 +90,8 @@ const Createwave = () => {
           formData,
           createAuthHeaders(token)
         );
-        console.log("Response:", response.data);
         toast.success("Wave added successfully!");
+        navigate("/app/dashboard");
 
         // Reset the form after success
         // resetForm();
@@ -178,10 +194,7 @@ const Createwave = () => {
             text: "",
           }}
           validationSchema={validationSchema}
-          onSubmit={(values: any) => {
-            handleSubmit(values);
-            navigate("/app/dashboard");
-          }}
+          onSubmit={handleSubmit}
         >
           {({ setFieldValue }) => (
             <Form encType="multipart/form-data">
@@ -216,7 +229,6 @@ const Createwave = () => {
 
               <div>
                 <button
-                  type="submit"
                   style={{
                     backgroundColor: "#3E5677",
                     width: "205px",
@@ -229,6 +241,7 @@ const Createwave = () => {
                     fontSize: "16px",
                     cursor: "pointer",
                   }}
+                  type="submit"
                 >
                   Create Wave
                 </button>
@@ -259,8 +272,16 @@ const Createwave = () => {
                 placeholder="Search"
                 className="w-100 form-control border-0 rounded-5 ps-2"
                 id="searchInput"
-                onChange={(e:any)=>{
-                setSearch(e.target.value)
+                onKeyDown={(e: any) => {
+                  if (e.key == "Enter") {
+                    setSearch(e.target.value);
+                  }
+                }}
+              />
+              <TfiReload
+                className="me-3"
+                onClick={() => {
+                  setSearch("");
                 }}
               />
               <button
@@ -284,7 +305,7 @@ const Createwave = () => {
           <div className="col-12 my-3 ">
             {data?.waves?.userWaves?.length > 0 && (
               <>
-                {data?.waves?.userWaves?.map((waveData: any) => (
+                {userWaves?.data?.map((waveData: any) => (
                   <div
                     className="p-1 wave-card rounded me-4 mb-3"
                     key={waveData.id}

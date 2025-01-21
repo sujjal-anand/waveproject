@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import api from "../api/axiosInstance";
@@ -8,11 +8,16 @@ import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 
 const Invitefriends = () => {
+  const navigate = useNavigate();
+  useEffect(() => {
+    if (!localStorage.getItem("token")) {
+      navigate("/login");
+    }
+  }, []);
   const [forms, setForms] = useState([
     { id: Date.now(), values: {}, isValid: false },
   ]);
   const [isLoading, setIsLoading] = useState(false); // State to track loading
-  const navigate = useNavigate();
 
   const initialValues = {
     fullname: "",

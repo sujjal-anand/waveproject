@@ -1,6 +1,5 @@
 import React, { useEffect } from "react";
 import { Link, NavLink, Outlet, useNavigate } from "react-router-dom";
-// import "bootstrap/dist/css/bootstrap.min.css";
 import "../Styling/Outline..css";
 import api from "../api/axiosInstance";
 import { Local } from "../environment/env";
@@ -22,6 +21,8 @@ const fetchUserDetail = async () => {
 };
 
 const Outline = () => {
+  const token = localStorage.getItem("token");
+
   const navigate = useNavigate();
   useEffect(() => {
     if (!localStorage.getItem("token")) {
@@ -29,9 +30,12 @@ const Outline = () => {
     }
   }, []);
 
-  const Logout = () => {
-    if (localStorage.getItem("token")) {
+  const signOut = () => {
+    localStorage.clear();
+    if (token) {
       localStorage.clear();
+      navigate("/login");
+    } else {
       navigate("/login");
     }
   };
@@ -71,7 +75,7 @@ const Outline = () => {
             className="mt-3"
             xmlns="http://www.w3.org/2000/svg"
           >
-            <g clip-path="url(#clip0_1418_393)">
+            <g clipPath="url(#clip0_1418_393)">
               <path
                 d="M40.5022 48.1138C50.958 48.1138 59.4341 39.5998 59.4341 29.0972C59.4341 18.5946 50.958 10.0806 40.5022 10.0806C30.0464 10.0806 21.5703 18.5946 21.5703 29.0972C21.5703 39.5998 30.0464 48.1138 40.5022 48.1138Z"
                 fill="#BEA16E"
@@ -290,7 +294,7 @@ const Outline = () => {
           <button
             className="btn text-light d-flex ms-4 "
             onClick={() => {
-              Logout();
+              signOut();
             }}
           >
             <svg
@@ -344,7 +348,7 @@ const Outline = () => {
 
           <ul className="dropdown-menu my-2">
             <li>
-              <Link className="dropdown-item cmn-clr " to="/app/profile">
+              <Link className="dropdown-item cmn-clr " to="/app/myProfile">
                 My Profile
               </Link>
             </li>
@@ -382,7 +386,8 @@ const Outline = () => {
                 className="dropdown-item text-secondary"
                 to="#"
                 onClick={() => {
-                  Logout();
+                  localStorage.clear();
+                  window.location.reload();
                 }}
               >
                 Log Out

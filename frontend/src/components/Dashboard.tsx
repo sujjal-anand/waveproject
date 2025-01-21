@@ -6,7 +6,7 @@ import { Local } from "../environment/env";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import { toast } from "react-toastify";
 import { createAuthHeaders } from "../utils/token";
-import "../Styling/createwave.css";
+import "../Styling/Dashboard.css";
 import { useNavigate } from "react-router-dom";
 
 const fetchUserDetail = async () => {
