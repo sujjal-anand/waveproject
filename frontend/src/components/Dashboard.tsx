@@ -59,8 +59,8 @@ const Dashboard = () => {
     }
   }, []);
   const token = localStorage.getItem("token");
-  const [getwave, setGetwave] = useState<any>({});
-  const [getfriend, setGetfriend] = useState<any>({});
+  const [getWave, setGetWave] = useState<any>({});
+  const [getFriend, setGetFriend] = useState<any>({});
   const [show, setShow] = useState<any>(0);
 
   const {
@@ -108,7 +108,7 @@ const Dashboard = () => {
                 data-bs-target="#staticBackdropWave"
                 onClick={() => {
                   //modal
-                  setGetwave(wave);
+                  setGetWave(wave);
                 }}
               >
                 <div className="d-flex pb-0 border-end ">
@@ -151,7 +151,7 @@ const Dashboard = () => {
                 data-bs-toggle="modal"
                 data-bs-target="#staticBackdrop"
                 onClick={() => {
-                  setGetfriend(friend);
+                  setGetFriend(friend);
                 }}
               >
                 <div className="d-flex pb-0 frnd-card rounded">
@@ -191,7 +191,7 @@ const Dashboard = () => {
         </div>
       </div>
 
-      {getfriend && (
+      {getFriend && (
         <div
           className="modal fade"
           id="staticBackdrop"
@@ -215,9 +215,9 @@ const Dashboard = () => {
                     data-bs-dismiss="modal"
                     aria-label="Close"
                     onClick={() => {
-                      setGetfriend({
-                        firstname: getfriend.firstName,
-                        lastname: getfriend.lastName,
+                      setGetFriend({
+                        firstname: getFriend.firstName,
+                        lastname: getFriend.lastName,
                       });
                     }}
                   >
@@ -245,9 +245,9 @@ const Dashboard = () => {
 
               <div className="photo ms-5 mb-0 pb-0  main-img-div ">
                 <div className="d-flex photo">
-                  {getfriend.profilePhoto && (
+                  {getFriend.profilePhoto && (
                     <img
-                      src={`${Local.BASE_URL}${getfriend.profilePhoto}`}
+                      src={`${Local.BASE_URL}${getFriend.profilePhoto}`}
                       alt="User Profile"
                       className="rounded-5 border mt-4"
                       style={{ width: "100px", height: "100px" }}
@@ -255,9 +255,9 @@ const Dashboard = () => {
                       aria-expanded="false"
                     />
                   )}
-                  {!getfriend.profilePhoto && (
+                  {!getFriend.profilePhoto && (
                     <img
-                      src={`https://api.dicebear.com/5.x/initials/svg?seed=${getfriend.firstName} ${getfriend.lastName}`}
+                      src={`https://api.dicebear.com/5.x/initials/svg?seed=${getFriend.firstName} ${getFriend.lastName}`}
                       alt="User Profile"
                       className="rounded-5 border mt-4"
                       style={{ width: "90px", height: "90px" }}
@@ -266,9 +266,9 @@ const Dashboard = () => {
                     />
                   )}
                   <p className="ms-5 text-white fs-5 fw-semibold">
-                    {getfriend.firstName} {getfriend.lastName}
+                    {getFriend.firstName} {getFriend.lastName}
                     <p className=" text-white pt-0 mt-0 fw-light fs-6">
-                      {getfriend.email}
+                      {getFriend.email}
                     </p>
                   </p>
                 </div>
@@ -294,17 +294,17 @@ const Dashboard = () => {
                         >
                           <div className="row mb-1">
                             {" "}
-                            {getfriend.firstName} {getfriend.lastName}
+                            {getFriend.firstName} {getFriend.lastName}
                           </div>
-                          <div className="row mb-1"> {getfriend.email} </div>
-                          <div className="row mb-1"> {getfriend.phoneNo} </div>
+                          <div className="row mb-1"> {getFriend.email} </div>
+                          <div className="row mb-1"> {getFriend.phoneNo} </div>
                           <div className="row mb-1">
                             {" "}
-                            {getfriend.gender || "----"}{" "}
+                            {getFriend.gender || "----"}{" "}
                           </div>
                           <div className="row mb-1">
                             {" "}
-                            {getfriend.state || "----"}{" "}
+                            {getFriend.state || "----"}{" "}
                           </div>
                         </div>
                       </div>
@@ -329,23 +329,23 @@ const Dashboard = () => {
                         >
                           <div className="row mb-1">
                             {" "}
-                            {getfriend.dob || "----"}{" "}
+                            {getFriend.dob || "----"}{" "}
                           </div>
                           <div className="row mb-1">
                             {" "}
-                            {getfriend.social_security || "----"}{" "}
+                            {getFriend.social_security || "----"}{" "}
                           </div>
                           <div className="row mb-1">
                             {" "}
-                            {getfriend.address_one || "----"}{" "}
+                            {getFriend.address_one || "----"}{" "}
                           </div>
                           <div className="row mb-1">
                             {" "}
-                            {getfriend.city || "----"}{" "}
+                            {getFriend.city || "----"}{" "}
                           </div>
                           <div className="row mb-1">
                             {" "}
-                            {getfriend.zip_code || "----"}{" "}
+                            {getFriend.zip_code || "----"}{" "}
                           </div>
                         </div>
                       </div>
@@ -358,7 +358,7 @@ const Dashboard = () => {
         </div>
       )}
 
-      {getwave && (
+      {getWave && (
         <div
           className="modal fade"
           id="staticBackdropWave"
@@ -382,9 +382,9 @@ const Dashboard = () => {
                     data-bs-dismiss="modal"
                     aria-label="Close"
                     onClick={() => {
-                      setGetwave({
-                        firstname: getwave?.userWave?.firstName,
-                        lastname: getwave?.userWave?.lastName,
+                      setGetWave({
+                        firstname: getWave?.userWave?.firstName,
+                        lastname: getWave?.userWave?.lastName,
                       });
                     }}
                   >
@@ -410,9 +410,9 @@ const Dashboard = () => {
 
               <div className="photo ms-5 mb-0 pb-0  main-img-div ">
                 <div className="d-flex photo">
-                  {getwave?.userWave?.profilePhoto && (
+                  {getWave?.userWave?.profilePhoto && (
                     <img
-                      src={`${Local.BASE_URL}${getwave?.userWave?.profilePhoto}`}
+                      src={`${Local.BASE_URL}${getWave?.userWave?.profilePhoto}`}
                       alt="User Profile"
                       className="rounded-circle border mt-3"
                       style={{ width: "100px", height: "100px" }}
@@ -420,9 +420,9 @@ const Dashboard = () => {
                       aria-expanded="false"
                     />
                   )}
-                  {!getwave?.userWave?.profilePhoto && (
+                  {!getWave?.userWave?.profilePhoto && (
                     <img
-                      src={`https://api.dicebear.com/5.x/initials/svg?seed=${getwave?.userWave?.firstName} ${getwave?.userWave?.lastName}`}
+                      src={`https://api.dicebear.com/5.x/initials/svg?seed=${getWave?.userWave?.firstName} ${getWave?.userWave?.lastName}`}
                       alt="User Profile"
                       className="rounded-circle border mt-3"
                       style={{ width: "100px", height: "100px" }}
@@ -431,10 +431,10 @@ const Dashboard = () => {
                     />
                   )}
                   <p className="ms-5 text-white fs-5 fw-semibold">
-                    {getwave?.userWave?.firstName} {getwave?.userWave?.lastName}
+                    {getWave?.userWave?.firstName} {getWave?.userWave?.lastName}
                     <p className=" text-white pt-0 mt-0 fw-light fs-6">
                       {" "}
-                      {getwave?.userWave?.email}{" "}
+                      {getWave?.userWave?.email}{" "}
                     </p>
                   </p>
                 </div>
@@ -446,46 +446,46 @@ const Dashboard = () => {
                     <div className="">
                       <p className="mb-0 fw-semibold ">Message</p>
                       <p className="mt-1 ms-2 text-secondary">
-                        {getwave?.text}
+                        {getWave?.text}
                       </p>
                     </div>
                   </div>
                 </div>
 
                 <div className="d-flex photo border-start border-2 border-secondary-subtle">
-                  {getwave?.image ? (
+                  {getWave?.image ? (
                     <img
-                      src={`${Local.BASE_URL}${getwave.image}`}
+                      src={`${Local.BASE_URL}${getWave.image}`}
                       alt="User Profile"
                       className="ps-4"
                       style={{ width: "360px", height: "150px" }}
                       data-bs-toggle="dropdown"
                       aria-expanded="false"
                     />
-                  ) : getwave?.video ? (
+                  ) : getWave?.video ? (
                     <video controls style={{ width: "360px", height: "150px" }}>
                       <source
-                        src={`${Local.BASE_URL}${getwave.video}`}
+                        src={`${Local.BASE_URL}${getWave.video}`}
                         type="video/mp4"
                       />
                       <source
-                        src={`${Local.BASE_URL}${getwave.video}`}
+                        src={`${Local.BASE_URL}${getWave.video}`}
                         type="video/webm"
                       />
                       <source
-                        src={`${Local.BASE_URL}${getwave.video}`}
+                        src={`${Local.BASE_URL}${getWave.video}`}
                         type="video/ogg"
                       />
                       <source
-                        src={`${Local.BASE_URL}${getwave.video}`}
+                        src={`${Local.BASE_URL}${getWave.video}`}
                         type="video/avi"
                       />
                       <source
-                        src={`${Local.BASE_URL}${getwave.video}`}
+                        src={`${Local.BASE_URL}${getWave.video}`}
                         type="video/mov"
                       />
                       <source
-                        src={`${Local.BASE_URL}${getwave.video}`}
+                        src={`${Local.BASE_URL}${getWave.video}`}
                         type="video/quicktime"
                       />
                       Your browser does not support the video tag.
@@ -503,7 +503,22 @@ const Dashboard = () => {
                       setShow(1);
                     }}
                   >
-                    {/* <Button text="Add Comments" type="button" /> */}
+                    <button
+                      style={{
+                        backgroundColor: "#3E5677",
+                        width: "200px", // Increased width
+                        height: "50px",
+                        gap: "0px",
+                        borderRadius: "10px",
+                        opacity: "0.9",
+                        color: "#fff",
+                        border: "none",
+                        fontSize: "16px",
+                        cursor: "pointer",
+                      }}
+                    >
+                      Add Comments
+                    </button>
                   </div>
                 )}
                 {show == 1 && (
@@ -514,6 +529,7 @@ const Dashboard = () => {
                         setShow(0);
                       }}
                     />
+
                     <input
                       type="text"
                       className="form-control border-2 col"

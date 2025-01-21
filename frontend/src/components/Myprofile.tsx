@@ -183,6 +183,7 @@ const Myprofile = () => {
           createAuthHeaders(token)
         );
         console.log("Response:", response.data);
+        toast.success("Profile Updated Successfully");
       } catch (error: any) {
         console.error("Error:", error.response?.data || error.message);
       }
@@ -201,6 +202,7 @@ const Myprofile = () => {
           createAuthHeaders(token)
         );
         console.log("Response:", response.data);
+        toast.success("Profile Updated Successfully");
       } catch (error: any) {
         console.error("Error:", error.response?.data || error.message);
       }

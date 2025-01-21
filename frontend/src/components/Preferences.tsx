@@ -83,15 +83,17 @@ const Preferences = () => {
         "Bed time must be in HH:mm format"
       ),
     weight: Yup.number()
-      .required("Weight is required")
+      .required("Weight value should be in numbers")
       .positive("Weight must be positive"),
     height: Yup.number()
-      .required("Height is required")
+      .required("Height value should be in numbers")
       .positive("Height must be positive"),
     bloodGlucose: Yup.number()
-      .required("Blood glucose value is required")
+      .required("Blood glucose value should be in numbers")
       .positive("Blood glucose value must be positive"),
-    cholesterol: Yup.number().required("Cholesterol value is required"),
+    cholesterol: Yup.number().required(
+      "Cholesterol value should be in numbers"
+    ),
     bloodPressure: Yup.string()
       .required("Blood pressure is required")
       .matches(
@@ -99,7 +101,7 @@ const Preferences = () => {
         "Blood pressure must be in the format 'systolic/diastolic'"
       ),
     distance: Yup.number()
-      .required("Distance is required")
+      .required("Distance value should be in numbers")
       .positive("Distance must be positive"),
     communicationPreferences: Yup.object({
       systemEmail: Yup.boolean(),
