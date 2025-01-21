@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import api from "../api/axiosInstance";
 // import "../styling/createwave.css";
 import { Local } from "../environment/env";
@@ -83,7 +83,28 @@ const Dashboard = () => {
     queryFn: fetchUserDetail,
   });
 
-  console.log(acceptedFriends);
+
+    // Define and return the mutation
+    const mutation = useMutation({
+      mutationFn: async (values: any) => {
+        if(token){
+          const response = await api.put(`${Local.ADD_COMMENT}`,values,createAuthHeaders(token));
+          console.log("<><>",response.data)
+    
+        }
+        },
+      
+  
+     
+      onSuccess: (data) => {
+        console.log('Comment submitted successfully:', data);
+      },
+      onError: (error) => {
+        console.error('Error submitting comment:', error);
+      },
+    });
+  
+
 
   if (isLoading) {
     return <div>Loading...</div>;
@@ -496,84 +517,78 @@ const Dashboard = () => {
                 </div>
               </div>
 
-              <div className="ms-4 comment-btn">
-                {!show && (
-                  <div
-                    onClick={() => {
-                      setShow(1);
-                    }}
-                  >
-                    <button
-                      style={{
-                        backgroundColor: "#3E5677",
-                        width: "200px", // Increased width
-                        height: "50px",
-                        gap: "0px",
-                        borderRadius: "10px",
-                        opacity: "0.9",
-                        color: "#fff",
-                        border: "none",
-                        fontSize: "16px",
-                        cursor: "pointer",
-                      }}
-                    >
-                      Add Comments
-                    </button>
-                  </div>
-                )}
-                {show == 1 && (
-                  <div className="row  ">
-                    <button
-                      className="btn btn-close col-1 mt-1 pt-3 me-2"
-                      onClick={() => {
-                        setShow(0);
-                      }}
-                    />
+              <Formik
+      initialValues={{
+        comment: "",
+        waveId: "", // Initial value for waveId
+        userId: "", // Initial value for userId
+      }}
+      onSubmit={(values:any)=>{
+        mutation.mutate(values);      }}
+    >
+      {({ setFieldValue }) => (
+        <Form className="ms-4 comment-btn">
+          <div className="row w-75 mx-auto">
+            {/* Comment Input Field */}
+            <Field
+              name="comment"
+              type="text"
+              className="form-control border-2 col"
+              placeholder="Enter your comment"
+              onClick={()=>{
+                setFieldValue("waveId",getWave.id)
+                setFieldValue("userId",userDetail.user.id)
+              }}
+            />
+            {/* Submit Button */}
+            <button
+              type="submit"
+              className="col-1 ms-2 rounded btn-clr text-white border-0 "
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="20"
+                height="20"
+                fill="currentColor"
+                className="bi bi-send"
+                viewBox="0 0 16 16"
+              >
+                <path d="M15.854.146a.5.5 0 0 1 .11.54l-5.819 14.547a.75.75 0 0 1-1.329.124l-3.178-4.995L.643 7.184a.75.75 0 0 1 .124-1.33L15.314.037a.5.5 0 0 1 .54.11ZM6.636 10.07l2.761 4.338L14.13 2.576zm6.787-8.201L1.591 6.602l4.339 2.76z" />
+              </svg>
+            </button>
+          </div>
 
-                    <input
-                      type="text"
-                      className="form-control border-2 col"
-                      placeholder="Enter your comment"
-                    />
-                    <button className="col-1 ms-2 rounded btn-clr text-white border-0">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="24"
-                        height="24"
-                        fill="currentColor"
-                        className="bi bi-send"
-                        viewBox="0 0 16 16"
-                      >
-                        <path d="M15.854.146a.5.5 0 0 1 .11.54l-5.819 14.547a.75.75 0 0 1-1.329.124l-3.178-4.995L.643 7.184a.75.75 0 0 1 .124-1.33L15.314.037a.5.5 0 0 1 .54.11ZM6.636 10.07l2.761 4.338L14.13 2.576zm6.787-8.201L1.591 6.602l4.339 2.76z" />
-                      </svg>
-                    </button>
-                    <div className="col"></div>
-                  </div>
-                )}
-              </div>
+          <Field type="hidden" name="waveId"  />
+          <Field type="hidden" name="userId" />
+
+        
+            
+        </Form>
+      )}
+    </Formik>
 
               <div
                 className="ms-4 text-secondary me-2 overflow-auto comments "
                 style={{ maxHeight: "150px" }} // Adjust the maxHeight as needed
               >
-                {/* {comments?.map((comment: any) =>
-                  comment?.user_comment?.uuid == friends?.user?.uuid ? (
-                    <p className="mb-0 pb-1 row">
-                      <div className="col-10">
-                        <b>Jasmine : </b>wefgkweimf
-                      </div>
-                      <div className="col-2 p-0">
-                        <div className="text-primary">
-                          <span> Edit </span> | <span> Delete </span>
-                        </div>
-                      </div>
-                    </p>
-                  ) : (
+                {getWave?.waveComment?.map((comment: any) =>
+                //  (
+                //     <p className="mb-0 pb-1 row">
+                //       <div className="col-10">
+                //         <b>Jasmine : </b>wefgkweimf
+                //       </div>
+                //       <div className="col-2 p-0">
+                //         <div className="text-primary">
+                //           <span> Edit </span> | <span> Delete </span>
+                //         </div>
+                //       </div>
+                //     </p>
+                //   ) : (
                     <p className="mb-0 pb-1">
-                      <b>Jasmdfgrine : </b>wefgkweimf
+                      <b>{comment?.userComment?.firstName} {comment?.userComment?.lastName} : </b>{comment?.comment}
                     </p>
                   )
-                )} */}
+}
               </div>
             </div>
           </div>

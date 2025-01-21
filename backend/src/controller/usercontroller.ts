@@ -532,6 +532,12 @@ export const latestWaves = async (req: any, res: any) => {
         {
           model: Comments, // Include associated Comments model
           as: "waveComment", // Alias for comments association
+          include: [
+            {
+              model: Users, // Include Users model for each comment's user details
+              as: "userComment", // Alias for the user associated with the comment
+            },
+          ],
         },
       ],
     });
@@ -548,6 +554,7 @@ export const latestWaves = async (req: any, res: any) => {
     });
   }
 };
+
 
 export const addComment = async (req: any, res: any) => {
   try {

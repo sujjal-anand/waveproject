@@ -19,6 +19,7 @@ import {
   signUp,
   updateUser,
   updateUserPicture,
+  addComment
 } from "../controller/usercontroller";
 const userRoutes = Router();
 
@@ -42,5 +43,6 @@ userRoutes.put(
 );
 userRoutes.get("/getAcceptedFriends", JWT, acceptedFriend);
 userRoutes.get("/getUserWaves", JWT, getUserWaves);
+userRoutes.put("/addComment",JWT,addComment)
 
 export default userRoutes;

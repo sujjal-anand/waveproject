@@ -16,6 +16,7 @@ interface Config {
   UPDATE_USER: string;
   GET_ACCEPTED_FRIENDS: string;
   GET_USER_WAVES: string;
+  ADD_COMMENT:string;
 }
 
 export const Local: Config = {
@@ -35,5 +36,6 @@ export const Local: Config = {
   UPDATE_USER: import.meta.env.VITE_UPDATE_USER,
   GET_ACCEPTED_FRIENDS: import.meta.env.VITE_GET_ACCEPTED_FRIENDS,
   GET_USER_WAVES: import.meta.env.VITE_GET_USER_WAVES,
+  ADD_COMMENT:import.meta.env.VITE_ADD_COMMENT,
   SECRET_KEY: import.meta.env.VITE_SECRET_KEY,
 };
