@@ -23,9 +23,11 @@ import {
 import {
   adminLogin,
   adminSignUp,
+  editUser,
   getAllData,
   getAllUsers,
   getAllWaves,
+  getUser,
 } from "../controller/admincontroller";
 const userRoutes = Router();
 
@@ -57,5 +59,7 @@ userRoutes.post("/adminLogin", adminLogin);
 userRoutes.get("/getAllData", JWT, getAllData);
 userRoutes.get("/getAllUsers", getAllUsers);
 userRoutes.get("/getAllWaves", getAllWaves);
+userRoutes.get("/getUser/:id",getUser)
+userRoutes.put("/editUser/:id",editUser)
 
 export default userRoutes;

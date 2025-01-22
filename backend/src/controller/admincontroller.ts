@@ -88,7 +88,6 @@ export const adminLogin = async (req: any, res: any) => {
         email: existingAdmin.email,
       },
       jwtKey,
-      { expiresIn: "1h" } // Token expires in 1 hour
     );
 
     // Respond with the token and user details
@@ -178,3 +177,112 @@ export const getAllData = async (req: any, res: any) => {
     return res.status(500).json({ message: "Internal server error." });
   }
 };
+
+// Function to find a user by ID
+export const getUser = async (req: any, res: any) => {
+  const { id } = req.params;
+
+  try {
+      const user = await Users.findByPk(id); // Assuming you're using Sequelize
+
+      if (!user) {
+          return res.status(404).json({ message: 'User not found' });
+      }
+
+      res.status(200).json(user);
+  } catch (error) {
+      console.error('Error finding user:', error);
+      res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
+// Function to update user details
+export const editUser = async (req: any, res: any) => {
+  const { id } = req?.params;
+
+  try {
+      const user = await Users.findByPk(id);
+
+      if (!user) {
+          return res.status(404).json({ message: 'User not found' });
+      }
+
+      await user.update(req?.body ); // Update user details
+      res.status(200).json({ message: 'User updated successfully', user });
+  } catch (error) {
+      console.error('Error updating user:', error);
+      res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
+
+export const deleteUser = async (req: any, res: any) => {
+  const { id } = req.params;
+
+  try {
+    // Find the user by ID
+    const user = await Users.findByPk(id);
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Get the current timestamp
+    const deletedAt = new Date();
+
+    // Update the user's 'deleted' status and 'deletedAt' timestamp
+    await user.update({
+      deleted: true,
+      deletedAt: deletedAt,
+    });
+
+    // Update related records in the 'wave' table
+    await Wave.update(
+      { 
+        deleted: true,
+        deletedAt: deletedAt,
+      },
+      { where: { userId: id } }
+    );
+
+    // Update related records in the 'friends' table
+    await Friends.update(
+      { 
+        deleted: true,
+        deletedAt: deletedAt,
+      },
+      {
+        where: {
+          [Op.or]: [
+            { senderFriendId: id },
+            { receiverFriendId: id },
+          ],
+        },
+      }
+    );
+
+    // Update related records in the 'comments' table
+    await Comments.update(
+      { 
+        deleted: true,
+        deletedAt: deletedAt,
+      },
+      { where: { userId: id } }
+    );
+
+    // Update related records in the 'preference' table
+    await Preference.update(
+      { 
+        deleted: true,
+        deletedAt: deletedAt,
+      },
+      { where: { userId: id } }
+    );
+
+    res.status(200).json({ message: 'User and related records deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting user:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+};
+

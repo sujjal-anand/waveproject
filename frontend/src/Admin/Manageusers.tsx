@@ -5,6 +5,8 @@ import { Local } from "../environment/env";
 import { createAuthHeaders } from "../utils/token";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
+import { Field, Form, Formik } from "formik";
+import { toast } from "react-toastify";
 
 const getAllUsers = async () => {
   const adminToken = localStorage.getItem("adminToken");
@@ -81,12 +83,47 @@ const ManageUsers = () => {
                   <td>{user.phoneNo ? user.phoneNo : "------"}</td>
                   <td>
                     <div className="form-check form-switch text-center ms-5 ps-5">
-                      <input
-                        className="form-check-input"
-                        type="checkbox"
-                        checked={user.status}
-                        onChange={() => {}}
-                      />
+
+
+                      
+                    <Formik
+      initialValues={{ status: user?.status }} // Define initial values directly here
+      onSubmit={()=>{
+
+      }}
+    >
+      {({ values, handleChange }) => (
+        <Form>
+          <div className="form-check form-switch text-center ms-5 ps-5">
+            <Field
+              name="status"
+              type="checkbox"
+              className="form-check-input"
+              onChange={handleChange}
+              onClick={async()=>{
+                const adminToken = localStorage.getItem("adminToken");
+                if (adminToken) {
+                  try {
+                    const response = await api.put(
+                      `${Local.EDIT_USER}/${user.id}`,
+                      {status:values.status},
+                      createAuthHeaders(adminToken)
+                    );
+                    console.log("Response:", response.data);
+                    toast.success("Profile Updated Successfully");
+                  } catch (error: any) {
+                    console.error("Error:", error.response?.data || error.message);
+                  }
+                } else {
+                  console.error("adminToken is missing. Please log in.");
+                }
+              }}           />
+          </div>
+
+          
+        </Form>
+      )}
+    </Formik>
                     </div>
                   </td>
                   <td>
@@ -94,7 +131,9 @@ const ManageUsers = () => {
                       <button className="btn btn-sm btn-primary">
                         <Eye className=" " />
                       </button>
-                      <button className="btn btn-sm btn-success">
+                      <button className="btn btn-sm btn-success" onClick={()=>{
+                        navigate(`/editUser/${user.id}`)
+                      }}>
                         <Edit className=" " />
                       </button>
                       <button className="btn btn-sm btn-danger">

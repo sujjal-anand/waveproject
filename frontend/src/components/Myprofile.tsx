@@ -8,7 +8,8 @@ import * as Yup from "yup";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import { queryClient } from "../main";
+
+
 
 const fetchUserDetail = async () => {
   const token = localStorage.getItem("token");

@@ -22,6 +22,8 @@ interface Config {
   GET_ALL_DATA: string;
   GET_ALL_USERS: string;
   GET_ALL_WAVES: string;
+  EDIT_USER:string;
+  GET_USER:string;
 }
 
 export const Local: Config = {
@@ -47,5 +49,7 @@ export const Local: Config = {
   GET_ALL_DATA: import.meta.env.VITE_GET_ALL_DATA,
   GET_ALL_USERS: import.meta.env.VITE_GET_ALL_USERS,
   GET_ALL_WAVES: import.meta.env.VITE_GET_ALL_WAVES,
+  EDIT_USER:import.meta.env.VITE_EDIT_USER,
+  GET_USER:import.meta.env.VITE_GET_USER,
   SECRET_KEY: import.meta.env.VITE_SECRET_KEY,
 };

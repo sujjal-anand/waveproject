@@ -25,6 +25,7 @@ import Adminlogin from "./Admin/Adminlogin";
 import Admindashboard from "./Admin/Admindashboard";
 import ManageUsers from "./Admin/Manageusers";
 import ManageWaves from "./Admin/Managewaves";
+import Edituser from "./Admin/Edituser";
 
 const App: react.FC = () => {
   return (
@@ -50,6 +51,7 @@ const App: react.FC = () => {
           <Route path="/adminDashboard" element={<Admindashboard />} />
           <Route path="/manageUsers" element={<ManageUsers />} />
           <Route path="/manageWaves" element={<ManageWaves />} />
+          <Route path="/editUser/:id" element={<Edituser />} />
         </Routes>
       </BrowserRouter>
     </>
