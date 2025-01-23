@@ -19,6 +19,7 @@ import {
   updateUser,
   updateUserPicture,
   addComment,
+  deleteComment,
 } from "../controller/usercontroller";
 import {
   adminLogin,
@@ -69,5 +70,8 @@ userRoutes.put("/editUser/:id", editUser);
 userRoutes.delete("/deleteUser/:id", deleteUser);
 userRoutes.put("/editWave/:id", editWave);
 userRoutes.delete("/deleteWave/:id", deleteWave);
+userRoutes.delete("/deleteComment/:id", deleteComment);
+
+
 
 export default userRoutes;

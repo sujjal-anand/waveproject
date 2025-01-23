@@ -8,6 +8,7 @@ import * as Yup from "yup";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+import { queryClient } from "../main";
 
 
 
@@ -35,36 +36,28 @@ const Myprofile = () => {
   const handleFileChange = async (event: any) => {
     const profilePhoto = event.target.files[0];
     if (profilePhoto) {
-      // Validate file type (JPG or PNG)
       const validTypes = ["image/jpeg", "image/png"];
       if (!validTypes.includes(profilePhoto.type)) {
         toast.error("Only JPG and PNG images are allowed");
         return;
       }
-
-      // Create an image element to load the file
+  
       const img = new Image();
       const objectUrl = URL.createObjectURL(profilePhoto);
       img.src = objectUrl;
-
+  
       img.onload = async () => {
-        // Set desired crop size (e.g., 300x300) for the cropped image
         const targetWidth = 300;
         const targetHeight = 300;
-
-        // Create a canvas to crop the image
+  
         const canvas = document.createElement("canvas");
         const ctx = canvas.getContext("2d");
-
-        // Set the canvas size to target crop size
         canvas.width = targetWidth;
         canvas.height = targetHeight;
-
-        // Calculate the center of the image to crop
+  
         const sourceX = (img.width - targetWidth) / 2;
         const sourceY = (img.height - targetHeight) / 2;
-
-        // Draw the cropped image onto the canvas (centered crop)
+  
         ctx?.drawImage(
           img,
           sourceX,
@@ -76,20 +69,16 @@ const Myprofile = () => {
           targetWidth,
           targetHeight
         );
-
-        // Convert canvas to a Blob (file)
+  
         canvas.toBlob(async (blob) => {
           if (blob) {
-            // Ensure the correct MIME type is set for the file
             const fileExtension = profilePhoto.name.split(".").pop();
             const fileName = `profilePhoto.${fileExtension}`;
-
-            // Create FormData and append the cropped image with the correct field name
+  
             const formData = new FormData();
-            formData.append("profilePhoto", blob, fileName); // This ensures the field name is "profilePhoto"
-
+            formData.append("profilePhoto", blob, fileName);
+  
             const token = localStorage.getItem("token");
-
             if (token) {
               try {
                 const response = await api.put(
@@ -97,10 +86,22 @@ const Myprofile = () => {
                   formData,
                   createAuthHeaders(token)
                 );
-                console.log("Response:", response.data);
-
-                // Reset the form after success (if needed)
-                // resetForm();
+  
+                if (response.status === 200) {
+                  console.log("Image upload successful");
+                  toast.success("Profile photo updated successfully");
+  
+                  // Debug query client
+                  console.log("Invalidating query...");
+                  console.log(queryClient);
+  
+                  // Invalidate query
+                  queryClient.invalidateQueries({
+                    queryKey: ["userDetail"],
+                  });
+  
+                  console.log("Query invalidated");
+                }
               } catch (error: any) {
                 toast.error(
                   "Error: " + (error.response?.data || error.message)
@@ -110,12 +111,11 @@ const Myprofile = () => {
               toast.error("Authentication token is missing. Please log in.");
             }
           }
-        }, profilePhoto.type); // Ensure correct MIME type when converting
+        }, profilePhoto.type);
       };
     }
-    toast.success("profile photo updated");
-    const queryClient = useQueryClient(); // Initialize the query client
   };
+  
 
   const [activeTab, setActiveTab] = useState<any>("basicDetails");
   const { data, isLoading, isError, error } = useQuery({
@@ -125,25 +125,7 @@ const Myprofile = () => {
 
   console.log("<<<", data?.user?.socialSecurity);
 
-  const initialValues = {
-    firstName: data?.user?.firstName || "",
-    lastName: data?.user?.lastName || "",
-    email: data?.user?.email || "",
-    phoneNo: data?.user?.phoneNo || "",
-
-    addressOne: data?.user?.addressOne || "",
-    addressTwo: data?.user?.addressTwo || "",
-    city: data?.user?.city || "",
-    state: data?.user?.state || "",
-    zipCode: data?.user?.zipCode || "",
-    dob: data?.user?.dob || null,
-    gender: data?.user?.gender || "",
-    maritalStatus: data?.user?.maritalStatus || "",
-    socialSecurity: data?.user?.socialSecurity || "",
-    social: data?.user?.social || "",
-    kids: data?.user?.kids || "",
-    profilePhoto: data?.user?.profilePhoto || "",
-  };
+  
 
   const basicDetailsSchema = Yup.object({
     firstName: Yup.string().required("First name is required"),
@@ -185,6 +167,7 @@ const Myprofile = () => {
         );
         console.log("Response:", response.data);
         toast.success("Profile Updated Successfully");
+        
       } catch (error: any) {
         console.error("Error:", error.response?.data || error.message);
       }

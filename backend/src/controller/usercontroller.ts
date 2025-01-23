@@ -13,21 +13,46 @@ import Preference from "../models/Preference";
 import { preferences } from "joi";
 const jwtKey = Local.Secret_Key;
 
+
 export const signUp = async (req: any, res: any) => {
   try {
-    const { firstName, lastName, email, phoneNo, password, userStatus } =
-      req.body;
+    const { firstName, lastName, email, phoneNo, password, userStatus } = req.body;
 
-    // Check if the user already exists
-    const existingUser = await Users.findOne({ where: { email } });
+    // Check if the user already exists, including soft-deleted users
+    const existingUser = await Users.findOne({ where: { email }, paranoid: false });
+
     if (existingUser) {
-      return res.status(200).json({ message: "User created successfully" });
+      if (existingUser.deletedAt === null) {
+        // User exists and is active
+        return res.status(200).json({ message: "User created successfully" });
+      } else {
+        // User exists but was soft-deleted; restore user
+        const hashedPassword = await bcrypt.hash(password, 10);
+        
+        // Use restore() method to clear deletedAt
+        await existingUser.restore();
+        
+        // Then update other fields
+        await existingUser.update({
+          firstName,
+          lastName,
+          phoneNo,
+          userStatus,
+          password: hashedPassword,
+        });
+
+        // Fetch the updated user to confirm changes
+        const updatedUser = await Users.findOne({ where: { email } });
+        
+        return res.status(200).json({ 
+          message: "User created successfully", 
+          user: updatedUser 
+        });
+      }
     }
 
-    // Hash the password
+    // If the user does not exist, create a new user
     const hashedPassword = await bcrypt.hash(password, 10);
-
-    // Create the new user
     const newUser = await Users.create({
       firstName,
       lastName,
@@ -37,14 +62,16 @@ export const signUp = async (req: any, res: any) => {
       password: hashedPassword,
     });
 
-    return res
-      .status(201)
-      .json({ message: "User created successfully", user: newUser });
-  } catch (error) {
+    return res.status(201).json({ message: "User created successfully", user: newUser });
+  } catch (error: any) {
     console.error("Error creating user:", error);
-    return res.status(500).json({ message: "Error creating user" });
+    return res.status(500).json({ message: "Error creating user", error: error.message });
   }
 };
+
+
+
+
 
 export const login = async (req: any, res: any) => {
   try {
@@ -53,18 +80,25 @@ export const login = async (req: any, res: any) => {
     // Check if user exists
     const user = await Users.findOne({ where: { email } });
     if (!user) {
-      return res.status(401).json({ message: "Invalid crendentials" });
+      return res.status(401).json({ message: "Invalid credentials" });
+    }
+
+    // Check if user status is active
+    if (user.status == false) {
+      return res
+        .status(401)
+        .json({ message: "Your account is not active. Please contact the administrator." });
     }
 
     // Verify password
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
-      return res.status(401).json({ message: "Invalid crendentials" });
+      return res.status(401).json({ message: "Invalid credentials" });
     }
 
     // Generate JWT token
     const token = jwt.sign(
-      { id: user.id, email: user.email, userStatus: user.userStatus },
+      { id: user.id, email: user.email, status: user.status },
       jwtKey
     );
 
@@ -78,7 +112,7 @@ export const login = async (req: any, res: any) => {
         lastName: user.lastName,
         email: user.email,
         phoneNo: user.phoneNo,
-        userStatus: user.userStatus,
+        status: user.status,
       },
     });
   } catch (error) {
@@ -86,6 +120,8 @@ export const login = async (req: any, res: any) => {
     return res.status(500).json({ message: "An error occurred during login" });
   }
 };
+
+
 
 export const inviteFriend = async (req: any, res: any) => {
   console.log(req?.body); // Log the incoming request body
@@ -275,6 +311,9 @@ export const getUserDetails = async (req: any, res: any) => {
       return res.status(404).json({ message: "User not found" });
     }
 
+    // Fetch user preferences regardless of friends
+    const preference = await Preference.findOne({ where: { userId: id } });
+
     // Find all friend records where the user is either sender or receiver
     const friends = await Friends.findAll({
       where: {
@@ -282,11 +321,23 @@ export const getUserDetails = async (req: any, res: any) => {
       },
     });
 
+  // Fetch waves for the current user
+  const userWaves = await Waves.findAll({
+    where: {
+      userId: id,
+    },
+  });
+
+    // If no friends, return user details with empty friends and waves arrays
     if (!friends || friends.length === 0) {
       return res.status(200).json({
         user,
         friends: [],
-        waves: [],
+        preference: preference,
+        waves: {
+          userWaves: userWaves,
+          friendWaves: [],
+        },
         message: "No friends or waves found for this user",
       });
     }
@@ -305,12 +356,7 @@ export const getUserDetails = async (req: any, res: any) => {
       },
     });
 
-    // Fetch waves for the current user
-    const userWaves = await Waves.findAll({
-      where: {
-        userId: id,
-      },
-    });
+  
 
     // Fetch waves for all friends
     const friendWaves = await Waves.findAll({
@@ -319,14 +365,11 @@ export const getUserDetails = async (req: any, res: any) => {
       },
     });
 
-    const preference = await Preference.findOne({ where: { userId: id } });
-
     // Return user details, friends, and waves
     return res.status(200).json({
       user,
       friends: friendDetails,
       preference: preference,
-      // preferences:{preference},
       waves: {
         userWaves,
         friendWaves,
@@ -337,6 +380,7 @@ export const getUserDetails = async (req: any, res: any) => {
     return res.status(500).json({ message: "Server error", error });
   }
 };
+
 
 export const createWave = async (req: any, res: any) => {
   try {
@@ -782,5 +826,29 @@ export const getUserWaves = async (req: any, res: any) => {
       success: false,
       message: "Failed to fetch waves",
     });
+  }
+};
+
+
+export const deleteComment = async (req: any, res: any) => {
+  const { id } = req.params; // Get the comment ID from the request params
+
+  try {
+    // Attempt to find the comment and delete it
+    const comment = await Comments.findOne({where:{id}}); // Find the comment by primary key (ID)
+
+    if (!comment) {
+      // If the comment doesn't exist, send a 404 response
+      return res.status(404).json({ message: 'Comment not found' });
+    }
+
+    // If the comment exists, destroy it (delete it from the database)
+    await comment.destroy();
+
+    // Send a success response
+    res.status(200).json({ message: 'Comment deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting comment:', error);
+    res.status(500).json({ message: 'Failed to delete comment' });
   }
 };

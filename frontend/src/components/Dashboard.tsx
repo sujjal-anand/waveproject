@@ -8,6 +8,7 @@ import { toast } from "react-toastify";
 import { createAuthHeaders } from "../utils/token";
 import "../Styling/Dashboard.css";
 import { useNavigate } from "react-router-dom";
+import { queryClient } from "../main";
 
 const fetchUserDetail = async () => {
   const token = localStorage.getItem("token");
@@ -67,10 +68,12 @@ const Dashboard = () => {
     data: wavesDetail,
     error,
     isLoading,
-    isError,
+    refetch,isError,
   } = useQuery({
     queryKey: ["latestWaves"],
     queryFn: getLatestWaves,
+    // refetchInterval:1000,
+    staleTime: 0,
   });
 
   const { data: acceptedFriends } = useQuery({
@@ -86,23 +89,58 @@ const Dashboard = () => {
   // Define and return the mutation
   const mutation = useMutation({
     mutationFn: async (values: any) => {
-      if (token) {
-        const response = await api.put(
-          `${Local.ADD_COMMENT}`,
-          values,
-          createAuthHeaders(token)
-        );
-        console.log("<><>", response.data);
-      }
+        if (!token) {
+            throw new Error("Authentication token is missing. Please log in.");
+        }
+        try {
+            const response = await api.put(
+                `${Local.ADD_COMMENT}`,
+                values,
+                createAuthHeaders(token)
+            );
+            return response.data;
+        } catch (error: any) {
+            console.error("Error while adding comment:", error.response?.data || error.message);
+            throw new Error(error.response?.data?.message || "Failed to add comment");
+        }
     },
+    onMutate: async (newComment) => {
+        // Cancel any outgoing refetches to avoid optimistic update being overwritten
+        await queryClient.cancelQueries({ queryKey: ["latestWaves"] });
+        
+        // Snapshot current data
+        const previousData = queryClient.getQueryData(["latestWaves"]);
+        
+        return { previousData };
+    },
+    onSuccess: async (data, variables) => {
+        // Force immediate invalidation and refetch
+        await queryClient.invalidateQueries({ 
+            queryKey: ["latestWaves"],
+            refetchType: 'active',
+            exact: true 
+        });
+        
+        // Force immediate refetch
+        await refetch();
+        
+        toast.success("Comment posted successfully");
+    },
+    onError: (error: any, variables, context) => {
+        // Rollback to previous data on error
+        if (context?.previousData) {
+            queryClient.setQueryData(["latestWaves"], context.previousData);
+        }
+        toast.error(`Error: ${error.message}`);
+    },
+    onSettled: () => {
+        // Always refetch after error or success
+        queryClient.invalidateQueries({ queryKey: ["latestWaves"] });
+    }
+});
 
-    onSuccess: (data) => {
-      console.log("Comment submitted successfully:", data);
-    },
-    onError: (error) => {
-      console.error("Error submitting comment:", error);
-    },
-  });
+
+  
 
   if (isLoading) {
     return <div>Loading...</div>;
@@ -518,9 +556,15 @@ const Dashboard = () => {
                   waveId: "", // Initial value for waveId
                   userId: "", // Initial value for userId
                 }}
-                onSubmit={(values: any) => {
-                  mutation.mutate(values);
-                }}
+                onSubmit={async (values: any, { resetForm }) => {
+                  try {
+                      await mutation.mutateAsync(values);
+                      resetForm();
+                  } catch (error) {
+                      console.error('Mutation failed:', error);
+                  }
+              }}
+              
               >
                 {({ setFieldValue }) => (
                   <Form className="ms-4 comment-btn">
@@ -533,7 +577,8 @@ const Dashboard = () => {
                         placeholder="Enter your comment"
                         onClick={() => {
                           setFieldValue("waveId", getWave.id);
-                          setFieldValue("userId", userDetail.user.id);
+                          setFieldValue("userId", userDetail?.user?.id);
+                        
                         }}
                       />
                       {/* Submit Button */}
@@ -564,27 +609,78 @@ const Dashboard = () => {
                 className="ms-4 text-secondary me-2 overflow-auto comments "
                 style={{ maxHeight: "150px" }}
               >
-                {getWave?.waveComment?.map((comment: any) => (
-                  //  (
-                  //     <p className="mb-0 pb-1 row">
-                  //       <div className="col-10">
-                  //         <b>Jasmine : </b>wefgkweimf
-                  //       </div>
-                  //       <div className="col-2 p-0">
-                  //         <div className="text-primary">
-                  //           <span> Edit </span> | <span> Delete </span>
-                  //         </div>
-                  //       </div>
-                  //     </p>
-                  //   ) : (
-                  <p className="mb-0 pb-1">
-                    <b>
-                      {comment?.userComment?.firstName}{" "}
-                      {comment?.userComment?.lastName} :{" "}
-                    </b>
-                    {comment?.comment}
-                  </p>
-                ))}
+               {getWave?.waveComment?.map((comment: any) => (
+  <div
+    key={comment.id}
+    className="mb-0 pb-1 flex items-center justify-between"
+    style={{
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      padding: '8px 0',
+      borderBottom: '1px solid #eee',
+    }}
+  >
+    {/* Comment Content */}
+    <div className="flex-grow" style={{ flex: 1 }}>
+      <b>
+        {comment?.userComment?.firstName} {comment?.userComment?.lastName} :{' '}
+      </b>
+      {comment?.comment}
+    </div>
+
+    {/* Action Buttons - Display only if the comment belongs to the current user */}
+    {comment?.userId === userDetail?.user?.id && (
+      <div
+        className="flex items-center gap-2 ml-4"
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px',
+          marginLeft: '16px',
+        }}
+      >
+        {/* Edit Button */}
+        <button
+          className="btn btn-sm text-blue-500 hover:text-blue-700"
+          style={{
+            border: 'none',
+            background: 'none',
+            padding: '4px 8px',
+            cursor: 'pointer',
+            fontSize: '0.875rem',
+          }}
+        >
+          Edit
+        </button>
+        <span className="text-gray-300">|</span>
+        {/* Delete Button */}
+        <button
+          className="btn btn-sm text-red-500 hover:text-red-700"
+          style={{
+            border: 'none',
+            background: 'none',
+            padding: '4px 8px',
+            cursor: 'pointer',
+            fontSize: '0.875rem',
+          }}
+          onClick={async () => {
+            const response = await api.delete(
+              `${Local.DELETE_COMMENT}/${comment.id}`
+            );
+            if (response.status === 200) {
+              toast.success('Comment deleted');
+            }
+          }}
+        >
+          Delete
+        </button>
+      </div>
+    )}
+  </div>
+))}
+
+
               </div>
             </div>
           </div>

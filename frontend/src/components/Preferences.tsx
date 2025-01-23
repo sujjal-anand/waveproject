@@ -123,7 +123,6 @@ const Preferences = () => {
 
         if (response.status === 200 || response.status === 201) {
           toast.success("Preference saved successfully:", response.data);
-          navigate("/app/dashboard");
           // Handle success response (e.g., show a success message or redirect)
         } else {
           toast.error("Unexpected response status:");

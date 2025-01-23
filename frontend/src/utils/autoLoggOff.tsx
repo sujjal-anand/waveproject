@@ -1,21 +1,20 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 
-const AutoLogOff = () => {
+const AutoLogOff: React.FC = () => {
   const navigate = useNavigate();
-  const INACTIVITY_TIMEOUT = 10 * 60 * 1000;
-
-  let inactivityTimer: NodeJS.Timeout;
+  const INACTIVITY_TIMEOUT = 10 * 60 * 1000; // 10 minutes
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   const resetTimer = () => {
     // Clear the existing timer
-    if (inactivityTimer) {
-      clearTimeout(inactivityTimer);
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
     }
 
     // Start a new timer
-    inactivityTimer = setTimeout(() => {
+    timerRef.current = setTimeout(() => {
       handleLogout();
     }, INACTIVITY_TIMEOUT);
   };
@@ -27,17 +26,21 @@ const AutoLogOff = () => {
   };
 
   useEffect(() => {
-    // Monitor user activity
+    // Define user activity events
     const events = ["mousemove", "keydown", "click"];
+
+    // Add event listeners to reset the timer
     events.forEach((event) => window.addEventListener(event, resetTimer));
 
-    // Start the timer when the component mounts
+    // Initialize the timer on component mount
     resetTimer();
 
     return () => {
       // Cleanup: Remove event listeners and clear the timer
       events.forEach((event) => window.removeEventListener(event, resetTimer));
-      clearTimeout(inactivityTimer);
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
+      }
     };
   }, []);
 

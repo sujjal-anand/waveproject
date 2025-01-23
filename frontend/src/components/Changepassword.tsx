@@ -52,6 +52,10 @@ const Changepassword = () => {
     newPassword: Yup.string()
       .required("New Password is required")
       .min(6, "New Password must be at least 6 characters")
+      .matches(
+        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$/,
+        "New Password must include at least one uppercase letter, one lowercase letter, one number, and one special character"
+      )
       .notOneOf(
         [Yup.ref("oldPassword")],
         "New Password cannot be the same as Old Password"
@@ -60,6 +64,7 @@ const Changepassword = () => {
       .required("Confirm Password is required")
       .oneOf([Yup.ref("newPassword")], "Passwords must match"),
   });
+  
 
   const handleSubmit = (values: typeof initialValues) => {
     console.log("Submitted data:", values);

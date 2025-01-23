@@ -8,7 +8,6 @@ class Admin extends Model {
   public status!: boolean;
   public deleted!: string; // Indicates soft deletion (e.g., 'yes'/'no' or 'active'/'deleted')
   public deletedAt!: Date | null; // Timestamp for when the record is soft deleted
-
 }
 
 // Initialize the model

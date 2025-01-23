@@ -28,6 +28,7 @@ interface Config {
   DELETE_USER: string;
   GET_WAVE: string;
   DELETE_WAVE: string;
+  DELETE_COMMENT:string
 }
 
 export const Local: Config = {
@@ -60,4 +61,5 @@ export const Local: Config = {
   GET_WAVE: import.meta.env.VITE_GET_WAVE,
   DELETE_WAVE: import.meta.env.VITE_DELETE_WAVE,
   SECRET_KEY: import.meta.env.VITE_SECRET_KEY,
+  DELETE_COMMENT: import.meta.env.VITE_DELETE_COMMENT,
 };
