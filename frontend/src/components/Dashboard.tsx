@@ -83,28 +83,26 @@ const Dashboard = () => {
     queryFn: fetchUserDetail,
   });
 
+  // Define and return the mutation
+  const mutation = useMutation({
+    mutationFn: async (values: any) => {
+      if (token) {
+        const response = await api.put(
+          `${Local.ADD_COMMENT}`,
+          values,
+          createAuthHeaders(token)
+        );
+        console.log("<><>", response.data);
+      }
+    },
 
-    // Define and return the mutation
-    const mutation = useMutation({
-      mutationFn: async (values: any) => {
-        if(token){
-          const response = await api.put(`${Local.ADD_COMMENT}`,values,createAuthHeaders(token));
-          console.log("<><>",response.data)
-    
-        }
-        },
-      
-  
-     
-      onSuccess: (data) => {
-        console.log('Comment submitted successfully:', data);
-      },
-      onError: (error) => {
-        console.error('Error submitting comment:', error);
-      },
-    });
-  
-
+    onSuccess: (data) => {
+      console.log("Comment submitted successfully:", data);
+    },
+    onError: (error) => {
+      console.error("Error submitting comment:", error);
+    },
+  });
 
   if (isLoading) {
     return <div>Loading...</div>;
@@ -314,18 +312,17 @@ const Dashboard = () => {
                           }}
                         >
                           <div className="row mb-1">
-                            {" "}
                             {getFriend.firstName} {getFriend.lastName}
                           </div>
                           <div className="row mb-1"> {getFriend.email} </div>
                           <div className="row mb-1"> {getFriend.phoneNo} </div>
                           <div className="row mb-1">
                             {" "}
-                            {getFriend.gender || "----"}{" "}
+                            {getFriend.gender || "----"}
                           </div>
                           <div className="row mb-1">
                             {" "}
-                            {getFriend.state || "----"}{" "}
+                            {getFriend.state || "----"}
                           </div>
                         </div>
                       </div>
@@ -349,24 +346,22 @@ const Dashboard = () => {
                           }}
                         >
                           <div className="row mb-1">
-                            {" "}
-                            {getFriend.dob || "----"}{" "}
+                            {getFriend.dob || "----"}
+                          </div>
+                          <div className="row mb-1">
+                            {getFriend.socialSecurity || "----"}
                           </div>
                           <div className="row mb-1">
                             {" "}
-                            {getFriend.social_security || "----"}{" "}
+                            {getFriend.addressOne || "----"}
                           </div>
                           <div className="row mb-1">
                             {" "}
-                            {getFriend.address_one || "----"}{" "}
+                            {getFriend.city || "----"}
                           </div>
                           <div className="row mb-1">
                             {" "}
-                            {getFriend.city || "----"}{" "}
-                          </div>
-                          <div className="row mb-1">
-                            {" "}
-                            {getFriend.zip_code || "----"}{" "}
+                            {getFriend.zipCode || "----"}
                           </div>
                         </div>
                       </div>
@@ -518,77 +513,78 @@ const Dashboard = () => {
               </div>
 
               <Formik
-      initialValues={{
-        comment: "",
-        waveId: "", // Initial value for waveId
-        userId: "", // Initial value for userId
-      }}
-      onSubmit={(values:any)=>{
-        mutation.mutate(values);      }}
-    >
-      {({ setFieldValue }) => (
-        <Form className="ms-4 comment-btn">
-          <div className="row w-75 mx-auto">
-            {/* Comment Input Field */}
-            <Field
-              name="comment"
-              type="text"
-              className="form-control border-2 col"
-              placeholder="Enter your comment"
-              onClick={()=>{
-                setFieldValue("waveId",getWave.id)
-                setFieldValue("userId",userDetail.user.id)
-              }}
-            />
-            {/* Submit Button */}
-            <button
-              type="submit"
-              className="col-1 ms-2 rounded btn-clr text-white border-0 "
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="20"
-                height="20"
-                fill="currentColor"
-                className="bi bi-send"
-                viewBox="0 0 16 16"
+                initialValues={{
+                  comment: "",
+                  waveId: "", // Initial value for waveId
+                  userId: "", // Initial value for userId
+                }}
+                onSubmit={(values: any) => {
+                  mutation.mutate(values);
+                }}
               >
-                <path d="M15.854.146a.5.5 0 0 1 .11.54l-5.819 14.547a.75.75 0 0 1-1.329.124l-3.178-4.995L.643 7.184a.75.75 0 0 1 .124-1.33L15.314.037a.5.5 0 0 1 .54.11ZM6.636 10.07l2.761 4.338L14.13 2.576zm6.787-8.201L1.591 6.602l4.339 2.76z" />
-              </svg>
-            </button>
-          </div>
+                {({ setFieldValue }) => (
+                  <Form className="ms-4 comment-btn">
+                    <div className="row w-75 mx-auto">
+                      {/* Comment Input Field */}
+                      <Field
+                        name="comment"
+                        type="text"
+                        className="form-control border-2 col"
+                        placeholder="Enter your comment"
+                        onClick={() => {
+                          setFieldValue("waveId", getWave.id);
+                          setFieldValue("userId", userDetail.user.id);
+                        }}
+                      />
+                      {/* Submit Button */}
+                      <button
+                        type="submit"
+                        className="col-1 ms-2 rounded btn-clr text-white border-0 "
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="20"
+                          height="20"
+                          fill="currentColor"
+                          className="bi bi-send"
+                          viewBox="0 0 16 16"
+                        >
+                          <path d="M15.854.146a.5.5 0 0 1 .11.54l-5.819 14.547a.75.75 0 0 1-1.329.124l-3.178-4.995L.643 7.184a.75.75 0 0 1 .124-1.33L15.314.037a.5.5 0 0 1 .54.11ZM6.636 10.07l2.761 4.338L14.13 2.576zm6.787-8.201L1.591 6.602l4.339 2.76z" />
+                        </svg>
+                      </button>
+                    </div>
 
-          <Field type="hidden" name="waveId"  />
-          <Field type="hidden" name="userId" />
-
-        
-            
-        </Form>
-      )}
-    </Formik>
+                    <Field type="hidden" name="waveId" />
+                    <Field type="hidden" name="userId" />
+                  </Form>
+                )}
+              </Formik>
 
               <div
                 className="ms-4 text-secondary me-2 overflow-auto comments "
-                style={{ maxHeight: "150px" }} // Adjust the maxHeight as needed
+                style={{ maxHeight: "150px" }}
               >
-                {getWave?.waveComment?.map((comment: any) =>
-                //  (
-                //     <p className="mb-0 pb-1 row">
-                //       <div className="col-10">
-                //         <b>Jasmine : </b>wefgkweimf
-                //       </div>
-                //       <div className="col-2 p-0">
-                //         <div className="text-primary">
-                //           <span> Edit </span> | <span> Delete </span>
-                //         </div>
-                //       </div>
-                //     </p>
-                //   ) : (
-                    <p className="mb-0 pb-1">
-                      <b>{comment?.userComment?.firstName} {comment?.userComment?.lastName} : </b>{comment?.comment}
-                    </p>
-                  )
-}
+                {getWave?.waveComment?.map((comment: any) => (
+                  //  (
+                  //     <p className="mb-0 pb-1 row">
+                  //       <div className="col-10">
+                  //         <b>Jasmine : </b>wefgkweimf
+                  //       </div>
+                  //       <div className="col-2 p-0">
+                  //         <div className="text-primary">
+                  //           <span> Edit </span> | <span> Delete </span>
+                  //         </div>
+                  //       </div>
+                  //     </p>
+                  //   ) : (
+                  <p className="mb-0 pb-1">
+                    <b>
+                      {comment?.userComment?.firstName}{" "}
+                      {comment?.userComment?.lastName} :{" "}
+                    </b>
+                    {comment?.comment}
+                  </p>
+                ))}
               </div>
             </div>
           </div>

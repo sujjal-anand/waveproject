@@ -82,10 +82,14 @@ const Login = () => {
 
         {/* Form Column */}
         <div className="col-6 bg-white p-3">
-          <div style={{ marginTop: "130px", marginLeft: "113px" }}>
+          <div style={{ marginTop: "130px", marginLeft: "50px" }}>
             <h2 className="row-12 mb-4" style={{ marginLeft: "21px" }}>
               Login Your Account
             </h2>
+            <hr
+              className="ms-4 border-2"
+              style={{ width: "20px", color: "#B18D4B" }}
+            />{" "}
             <form onSubmit={formik.handleSubmit} className="row g-3 p-4">
               {/* Email */}
               <div className="col-12">
@@ -96,7 +100,7 @@ const Login = () => {
                   id="email"
                   name="email"
                   type="email"
-                  className={`form-control ${
+                  className={`form-control w-75 ${
                     formik.touched.email && formik.errors.email
                       ? "is-invalid"
                       : ""
@@ -111,7 +115,7 @@ const Login = () => {
               </div>
 
               {/* Password */}
-              <div className="col-12 position-relative">
+              <div className="col-12 position-relative  w-75 ">
                 <label htmlFor="password" className="mb-2">
                   Password
                 </label>

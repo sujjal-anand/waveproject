@@ -89,10 +89,14 @@ const Signup = () => {
 
         {/* Form Column */}
         <div className="col-6 bg-white p-3">
-          <div style={{ marginTop: "50px", marginLeft: "113px" }}>
+          <div style={{ marginTop: "50px", marginLeft: "70px" }}>
             <h2 className="row-12 mb-4" style={{ marginLeft: "21px" }}>
               Sign Up
             </h2>
+            <hr
+              className="ms-4 border-2"
+              style={{ width: "20px", color: "#B18D4B" }}
+            />{" "}
             <Formik
               initialValues={{
                 firstName: "",
@@ -106,7 +110,7 @@ const Signup = () => {
               onSubmit={handleSubmit}
             >
               {() => (
-                <Form className="row g-3 p-4">
+                <Form className="row g-3 p-4 w-100">
                   {/* First Name */}
                   <div className="col-6">
                     <label className="mb-2">First Name</label>

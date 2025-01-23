@@ -2,7 +2,6 @@ import { Router } from "express";
 
 import { upload } from "../middleware/multer";
 import { JWT } from "../middleware/token";
-import { validateUser } from "../middleware/Validate";
 import {
   acceptedFriend,
   addFriendLogin,
@@ -19,8 +18,15 @@ import {
   signUp,
   updateUser,
   updateUserPicture,
-  addComment
+  addComment,
 } from "../controller/usercontroller";
+import {
+  adminLogin,
+  adminSignUp,
+  getAllData,
+  getAllUsers,
+  getAllWaves,
+} from "../controller/admincontroller";
 const userRoutes = Router();
 
 userRoutes.post("/signUp", signUp);
@@ -43,6 +49,13 @@ userRoutes.put(
 );
 userRoutes.get("/getAcceptedFriends", JWT, acceptedFriend);
 userRoutes.get("/getUserWaves", JWT, getUserWaves);
-userRoutes.put("/addComment",JWT,addComment)
+userRoutes.put("/addComment", JWT, addComment);
+
+//admin
+userRoutes.post("/adminSignup", adminSignUp);
+userRoutes.post("/adminLogin", adminLogin);
+userRoutes.get("/getAllData", JWT, getAllData);
+userRoutes.get("/getAllUsers", getAllUsers);
+userRoutes.get("/getAllWaves", getAllWaves);
 
 export default userRoutes;

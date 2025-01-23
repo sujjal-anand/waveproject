@@ -11,13 +11,6 @@ import { toast } from "react-toastify";
 import { queryClient } from "../main";
 
 const fetchUserDetail = async () => {
-  const navigate = useNavigate();
-  useEffect(() => {
-    if (!localStorage.getItem("token")) {
-      navigate("/login");
-    }
-  }, []);
-
   const token = localStorage.getItem("token");
   if (token) {
     const response = await api.get(
@@ -32,6 +25,12 @@ const fetchUserDetail = async () => {
 };
 
 const Myprofile = () => {
+  const navigate = useNavigate();
+  useEffect(() => {
+    if (!localStorage.getItem("token")) {
+      navigate("/login");
+    }
+  }, []);
   const handleFileChange = async (event: any) => {
     const profilePhoto = event.target.files[0];
     if (profilePhoto) {
@@ -117,12 +116,13 @@ const Myprofile = () => {
     const queryClient = useQueryClient(); // Initialize the query client
   };
 
-  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<any>("basicDetails");
   const { data, isLoading, isError, error } = useQuery({
     queryKey: ["userDetail"],
     queryFn: fetchUserDetail,
   });
+
+  console.log("<<<", data?.user?.socialSecurity);
 
   const initialValues = {
     firstName: data?.user?.firstName || "",

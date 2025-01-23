@@ -20,6 +20,11 @@ import Invitefriends from "./components/Invitefriends";
 import Changepassword from "./components/Changepassword";
 import Preferences from "./components/Preferences";
 import AutoLogOff from "./utils/autoLoggOff";
+import Adminsignup from "./Admin/Adminsignup";
+import Adminlogin from "./Admin/Adminlogin";
+import Admindashboard from "./Admin/Admindashboard";
+import ManageUsers from "./Admin/Manageusers";
+import ManageWaves from "./Admin/Managewaves";
 
 const App: react.FC = () => {
   return (
@@ -39,6 +44,12 @@ const App: react.FC = () => {
             <Route path="preferences" element={<Preferences />} />
             <Route path="myProfile" element={<Myprofile />} />
           </Route>
+          {/* ADMIN ROUTES */}
+          <Route path="/adminLogin" element={<Adminlogin />} />
+          <Route path="/adminSignup" element={<Adminsignup />} />
+          <Route path="/adminDashboard" element={<Admindashboard />} />
+          <Route path="/manageUsers" element={<ManageUsers />} />
+          <Route path="/manageWaves" element={<ManageWaves />} />
         </Routes>
       </BrowserRouter>
     </>
