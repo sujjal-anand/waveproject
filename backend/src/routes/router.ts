@@ -20,6 +20,8 @@ import {
   updateUserPicture,
   addComment,
   deleteComment,
+  getWaveCommentsById,
+  editWaveComment,
 } from "../controller/usercontroller";
 import {
   adminLogin,
@@ -68,10 +70,11 @@ userRoutes.get("/getUser/:id", getUser);
 userRoutes.get("/getWave/:id", getWave);
 userRoutes.put("/editUser/:id", editUser);
 userRoutes.delete("/deleteUser/:id", deleteUser);
-userRoutes.put("/editWave/:id", editWave);
+userRoutes.put("/editWave/:id", upload.single("media"), editWave);
 userRoutes.delete("/deleteWave/:id", deleteWave);
 userRoutes.delete("/deleteComment/:id", deleteComment);
 
-
+userRoutes.get("/getWaveCommentsById/:id", getWaveCommentsById);
+userRoutes.put("/editComment/:id", editWaveComment);
 
 export default userRoutes;

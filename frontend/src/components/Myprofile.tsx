@@ -10,8 +10,6 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { queryClient } from "../main";
 
-
-
 const fetchUserDetail = async () => {
   const token = localStorage.getItem("token");
   if (token) {
@@ -41,23 +39,23 @@ const Myprofile = () => {
         toast.error("Only JPG and PNG images are allowed");
         return;
       }
-  
+
       const img = new Image();
       const objectUrl = URL.createObjectURL(profilePhoto);
       img.src = objectUrl;
-  
+
       img.onload = async () => {
         const targetWidth = 300;
         const targetHeight = 300;
-  
+
         const canvas = document.createElement("canvas");
         const ctx = canvas.getContext("2d");
         canvas.width = targetWidth;
         canvas.height = targetHeight;
-  
+
         const sourceX = (img.width - targetWidth) / 2;
         const sourceY = (img.height - targetHeight) / 2;
-  
+
         ctx?.drawImage(
           img,
           sourceX,
@@ -69,15 +67,15 @@ const Myprofile = () => {
           targetWidth,
           targetHeight
         );
-  
+
         canvas.toBlob(async (blob) => {
           if (blob) {
             const fileExtension = profilePhoto.name.split(".").pop();
             const fileName = `profilePhoto.${fileExtension}`;
-  
+
             const formData = new FormData();
             formData.append("profilePhoto", blob, fileName);
-  
+
             const token = localStorage.getItem("token");
             if (token) {
               try {
@@ -86,20 +84,20 @@ const Myprofile = () => {
                   formData,
                   createAuthHeaders(token)
                 );
-  
+
                 if (response.status === 200) {
                   console.log("Image upload successful");
                   toast.success("Profile photo updated successfully");
-  
+
                   // Debug query client
                   console.log("Invalidating query...");
                   console.log(queryClient);
-  
+
                   // Invalidate query
                   queryClient.invalidateQueries({
                     queryKey: ["userDetail"],
                   });
-  
+
                   console.log("Query invalidated");
                 }
               } catch (error: any) {
@@ -115,7 +113,6 @@ const Myprofile = () => {
       };
     }
   };
-  
 
   const [activeTab, setActiveTab] = useState<any>("basicDetails");
   const { data, isLoading, isError, error } = useQuery({
@@ -124,8 +121,6 @@ const Myprofile = () => {
   });
 
   console.log("<<<", data?.user?.socialSecurity);
-
-  
 
   const basicDetailsSchema = Yup.object({
     firstName: Yup.string().required("First name is required"),
@@ -167,7 +162,6 @@ const Myprofile = () => {
         );
         console.log("Response:", response.data);
         toast.success("Profile Updated Successfully");
-        
       } catch (error: any) {
         console.error("Error:", error.response?.data || error.message);
       }
@@ -400,6 +394,7 @@ const Myprofile = () => {
                           type="email"
                           name="email"
                           className="form-control"
+                          disabled
                         />
                         <ErrorMessage
                           name="email"

@@ -8,6 +8,7 @@ import { toast } from "react-toastify";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { createAuthHeaders } from "../utils/token";
 import { FaEye, FaEyeSlash } from "react-icons/fa"; // Import the icons
+import { Oval } from "react-loader-spinner"; // Import the loader
 
 const Login = () => {
   const navigate = useNavigate();
@@ -19,6 +20,8 @@ const Login = () => {
   const [searchParams] = useSearchParams();
   const token = searchParams.get("token"); // Extract token from URL
   const [passwordVisible, setPasswordVisible] = useState(false); // State for password visibility
+  const [isLoading, setIsLoading] = useState(false); // Loader state
+  const [fadeOut, setFadeOut] = useState(false); // Fade-out state
 
   const verifyToken = async (value: any) => {
     if (token) {
@@ -51,6 +54,8 @@ const Login = () => {
         .required("Password is required"),
     }),
     onSubmit: async (values) => {
+      setIsLoading(true); // Show the loader
+      setFadeOut(false); // Reset fadeOut before showing
       try {
         const response = await api.post(`${Local.LOGIN_USER}`, values);
 
@@ -63,6 +68,12 @@ const Login = () => {
         }
       } catch (error: any) {
         toast.error(error?.response?.data?.message || "Login failed");
+      } finally {
+        // Hide loader after 3-4 seconds
+        setTimeout(() => {
+          setFadeOut(true); // Trigger fade-out
+          setTimeout(() => setIsLoading(false), 500); // Hide loader after fade-out animation
+        }, 3000); // 3 seconds
       }
     },
   });
@@ -89,7 +100,7 @@ const Login = () => {
             <hr
               className="ms-4 border-2"
               style={{ width: "20px", color: "#B18D4B" }}
-            />{" "}
+            />
             <form onSubmit={formik.handleSubmit} className="row g-3 p-4">
               {/* Email */}
               <div className="col-12">
@@ -165,6 +176,35 @@ const Login = () => {
                 </button>
               </div>
             </form>
+
+            {/* Show loader with fade-in and fade-out animation */}
+            {isLoading && !fadeOut && (
+              <div className="d-flex justify-content-center mt-3">
+                <Oval
+                  height={50}
+                  width={50}
+                  color="#B18D4B"
+                  secondaryColor="#9B8A6C"
+                  strokeWidth={4}
+                  strokeWidthSecondary={2}
+                />
+              </div>
+            )}
+            {fadeOut && (
+              <div
+                className="d-flex justify-content-center mt-3 fade-out-loader"
+                style={{ opacity: 0, transition: "opacity 0.5s ease" }}
+              >
+                <Oval
+                  height={50}
+                  width={50}
+                  color="#B18D4B"
+                  secondaryColor="#9B8A6C"
+                  strokeWidth={4}
+                  strokeWidthSecondary={2}
+                />
+              </div>
+            )}
           </div>
         </div>
       </div>

@@ -1,10 +1,10 @@
 import React, { useEffect } from "react";
 import { Link, NavLink, Outlet, useNavigate } from "react-router-dom";
-import "../Styling/Outline..css";
 import api from "../api/axiosInstance";
 import { Local } from "../environment/env";
 import { createAuthHeaders } from "../utils/token";
 import { useQuery } from "@tanstack/react-query";
+import { toast } from "react-toastify";
 
 const fetchUserDetail = async () => {
   const token = localStorage.getItem("token");
@@ -51,6 +51,12 @@ const Outline = () => {
     queryFn: fetchUserDetail,
   });
 
+  if (data?.user?.status == false) {
+    localStorage.clear();
+    navigate("/login");
+    toast.error("User deactivated by admin");
+  }
+
   if (isLoading) return <div>Loading...</div>;
   if (isError)
     return (
@@ -63,16 +69,16 @@ const Outline = () => {
     <div className="d-flex vh-100 text-nowrap">
       {/* Sidebar */}
       <div
-        className="cmn-bg text-white d-flex flex-column p-3 text-nowrap"
-        style={{ width: "250px", height: "111%" }}
+        className=" text-white d-flex flex-column p-3 text-nowrap"
+        style={{ width: "250px", height: "100vh", backgroundColor: "#3e5677" }}
       >
-        <div className="mb-4 ms-5 ">
+        <div className="mb-4 ms-5 " style={{ backgroundColor: "#3e5677" }}>
           <svg
             width="81"
             height="73"
             viewBox="0 0 81 73"
             fill="none"
-            className="mt-3"
+            className="mt-3 ms-3"
             xmlns="http://www.w3.org/2000/svg"
           >
             <g clipPath="url(#clip0_1418_393)">
@@ -120,10 +126,11 @@ const Outline = () => {
         <nav className="nav flex-column mt-2 ms-3 ">
           <NavLink
             to="/app/dashboard"
-            className={({ isActive }) =>
-              `nav-link text-white py-2 d-flex mb-2 ${
-                isActive ? "active-link" : ""
-              }`
+            className="nav-link text-white py-2 d-flex mb-2"
+            style={({ isActive }) =>
+              isActive
+                ? { backgroundColor: "#bea16e", borderRadius: "5px" }
+                : {}
             }
           >
             <svg
@@ -151,10 +158,11 @@ const Outline = () => {
 
           <NavLink
             to="/app/myProfile"
-            className={({ isActive }) =>
-              `nav-link text-white py-2 d-flex mb-2 ${
-                isActive ? "active-link" : ""
-              }`
+            className="nav-link text-white py-2 d-flex mb-2"
+            style={({ isActive }) =>
+              isActive
+                ? { backgroundColor: "#bea16e", borderRadius: "5px" }
+                : {}
             }
           >
             <svg
@@ -179,10 +187,11 @@ const Outline = () => {
 
           <NavLink
             to="/app/preferences"
-            className={({ isActive }) =>
-              `nav-link text-white py-2 d-flex mb-2 ${
-                isActive ? "active-link" : ""
-              }`
+            className="nav-link text-white py-2 d-flex mb-2"
+            style={({ isActive }) =>
+              isActive
+                ? { backgroundColor: "#bea16e", borderRadius: "5px" }
+                : {}
             }
           >
             <svg
@@ -207,10 +216,11 @@ const Outline = () => {
 
           <NavLink
             to="/app/friends"
-            className={({ isActive }) =>
-              `nav-link text-white py-2 d-flex mb-2 ${
-                isActive ? "active-link" : ""
-              }`
+            className="nav-link text-white py-2 d-flex mb-2"
+            style={({ isActive }) =>
+              isActive
+                ? { backgroundColor: "#bea16e", borderRadius: "5px" }
+                : {}
             }
           >
             <svg
@@ -235,10 +245,11 @@ const Outline = () => {
 
           <NavLink
             to="/app/createWave"
-            className={({ isActive }) =>
-              `nav-link text-white py-2 d-flex mb-2 ${
-                isActive ? "active-link" : ""
-              }`
+            className="nav-link text-white py-2 d-flex mb-2"
+            style={({ isActive }) =>
+              isActive
+                ? { backgroundColor: "#bea16e", borderRadius: "5px" }
+                : {}
             }
           >
             <svg
@@ -263,10 +274,11 @@ const Outline = () => {
 
           <NavLink
             to="/app/changePassword"
-            className={({ isActive }) =>
-              `nav-link text-white py-2 d-flex mb-2 ${
-                isActive ? "active-link" : ""
-              }`
+            className="nav-link text-white py-2 d-flex mb-2"
+            style={({ isActive }) =>
+              isActive
+                ? { backgroundColor: "#bea16e", borderRadius: "5px" }
+                : {}
             }
           >
             <svg
@@ -290,7 +302,10 @@ const Outline = () => {
           </NavLink>
         </nav>
 
-        <div className="mt-auto mb-auto text-center">
+        <div
+          className="mt-auto mb-auto text-center"
+          style={{ backgroundColor: "#3e5677" }}
+        >
           <button
             className="btn text-light d-flex ms-4 "
             onClick={() => {
@@ -324,7 +339,7 @@ const Outline = () => {
       </div>
 
       {/* Main Content */}
-      <div className="flex-grow-1 bg-light ">
+      <div className="flex-grow-1 bg-light  " style={{ height: "88%" }}>
         {/* NavBar */}
         <div className="d-flex justify-content-end align-items-center p-3 bg-white shadow-lg">
           <img
@@ -340,7 +355,10 @@ const Outline = () => {
             aria-expanded="false"
           />
           <div className="mx-2 me-4">
-            <p className="mb-0 cmn-clr"> {getGreeting()} </p>
+            <p className="mb-0 " style={{ color: "#3e5677" }}>
+              {" "}
+              {getGreeting()}{" "}
+            </p>
             <p className="mb-0 small text-secondary">
               {data?.user?.firstName} {data?.user?.lastName}
             </p>
@@ -348,7 +366,11 @@ const Outline = () => {
 
           <ul className="dropdown-menu my-2">
             <li>
-              <Link className="dropdown-item cmn-clr " to="/app/myProfile">
+              <Link
+                className="dropdown-item  "
+                style={{ color: "#3e5677" }}
+                to="/app/myProfile"
+              >
                 My Profile
               </Link>
             </li>

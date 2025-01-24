@@ -335,7 +335,7 @@ const Preferences = () => {
                       <label className="form-check-label">lbs</label>
                     </div>
                   </div>
-                  <Field type="text" placeholder="Weight" name="weight" />
+                  <Field type="number" placeholder="Weight" name="weight" />
                   <ErrorMessage name="weight" component="div" />
                 </div>
                 <div className="col-md-6">
@@ -389,7 +389,7 @@ const Preferences = () => {
                     </div>
                   </div>
                   <Field
-                    type="text"
+                    type="number"
                     placeholder="BloodGlucose"
                     name="bloodGlucose"
                   />
@@ -418,7 +418,7 @@ const Preferences = () => {
                     </div>
                   </div>
                   <Field
-                    type="text"
+                    type="number"
                     placeholder="Cholesterol"
                     name="cholesterol"
                   />
@@ -478,7 +478,7 @@ const Preferences = () => {
                       <label className="form-check-label">miles</label>
                     </div>
                   </div>
-                  <Field type="text" placeholder="Distance" name="distance" />
+                  <Field type="number" placeholder="Distance" name="distance" />
                   <ErrorMessage name="distance" component="div" />
                 </div>
               </div>

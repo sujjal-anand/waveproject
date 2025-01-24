@@ -7,6 +7,7 @@ import api from "../api/axiosInstance";
 import { Local } from "../environment/env";
 import { createAuthHeaders } from "../utils/token";
 import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 
 const handlePassword = async (postData: any) => {
   const token = localStorage.getItem("token");
@@ -17,7 +18,7 @@ const handlePassword = async (postData: any) => {
         postData,
         createAuthHeaders(token)
       );
-      console.log("Response:", response.data);
+      toast.success("Password updated successfully");
     } catch (error: any) {
       console.error("Error:", error.response?.data || error.message);
     }
@@ -64,7 +65,6 @@ const Changepassword = () => {
       .required("Confirm Password is required")
       .oneOf([Yup.ref("newPassword")], "Passwords must match"),
   });
-  
 
   const handleSubmit = (values: typeof initialValues) => {
     console.log("Submitted data:", values);

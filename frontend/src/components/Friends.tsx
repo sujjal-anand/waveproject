@@ -231,7 +231,7 @@ const Friends = () => {
 
                       {/* Friends Status */}
                       <div className="ms-auto me-3">
-                        {friends?.friend?.status === true && (
+                        {friends?.status === true && (
                           <p
                             className="badge bg-success fw-medium rounded-4 px-2"
                             style={{
@@ -242,7 +242,7 @@ const Friends = () => {
                             Active
                           </p>
                         )}
-                        {friends?.friend?.status === false && (
+                        {friends?.status === false && (
                           <p
                             className="badge fw-medium rounded-4 px-2"
                             style={{

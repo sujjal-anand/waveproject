@@ -112,7 +112,8 @@ const Edituser = () => {
   return (
     <div>
       <p
-        className="h5 pb-3 d-flex bg-secondary-subtle"
+        className="h5 pb-3 d-flex bg-secondary-subtle mt-2"
+        style={{ marginLeft: "20px" }}
         onClick={() => navigate("/manageUsers")}
       >
         <svg

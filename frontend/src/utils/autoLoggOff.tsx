@@ -4,7 +4,7 @@ import { toast } from "react-toastify";
 
 const AutoLogOff: React.FC = () => {
   const navigate = useNavigate();
-  const INACTIVITY_TIMEOUT = 10 * 60 * 1000; // 10 minutes
+  const INACTIVITY_TIMEOUT = 1 * 60 * 1000; // 10 minutes
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   const resetTimer = () => {

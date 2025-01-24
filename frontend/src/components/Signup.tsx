@@ -49,7 +49,7 @@ const Signup = () => {
     try {
       const response = await api.post(`${Local.CREATE_USER}`, values);
       console.log(response?.data);
-      if (response.status === 201||response.status === 200) {
+      if (response.status === 201 || response.status === 200) {
         toast.success(response?.data?.message);
         navigate("/login");
         if (token) {

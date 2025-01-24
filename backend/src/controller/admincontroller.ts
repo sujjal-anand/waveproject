@@ -276,20 +276,52 @@ export const editUser = async (req: any, res: any) => {
 };
 
 export const editWave = async (req: any, res: any) => {
-  const { id } = req?.params;
+  const { id } = req.params;
+  const { text } = req.body; // Extract text from the request body
+  const media = req.file; // Extract the uploaded file from req.file
 
   try {
-    const wave = await Waves.findByPk(id);
-
+    // Find the wave by ID
+    const wave = await Waves.findOne({ where: { id } });
     if (!wave) {
-      return res.status(404).json({ message: "wave not found" });
+      return res.status(404).json({ message: "Wave not found" });
     }
 
-    await wave.update(req?.body); // Update user details
-    res.status(200).json({ message: "wave updated successfully", wave });
+    // Update the text field if provided
+    if (text) {
+      await wave.update({ text });
+    }
+
+    // Handle media file upload
+    if (media) {
+      if (media.mimetype === "video/mp4") {
+        // Update video column and nullify the image column
+        await wave.update({
+          video: media.path, // Store the video path
+          image: null, // Nullify the image field
+        });
+      } else if (media.mimetype === "image/jpeg") {
+        // Update image column and nullify the video column
+        await wave.update({
+          image: media.path, // Store the image path
+          video: null, // Nullify the video field
+        });
+      } else {
+        return res
+          .status(400)
+          .json({ error: "Only MP4 and JPG files are allowed." });
+      }
+    }
+
+    // Fetch the updated wave for the response
+    const updatedWave = await Waves.findOne({ where: { id } });
+
+    return res
+      .status(200)
+      .json({ message: "Wave updated successfully", wave: updatedWave });
   } catch (error) {
     console.error("Error updating wave:", error);
-    res.status(500).json({ message: "Internal server error" });
+    return res.status(500).json({ message: "Internal server error" });
   }
 };
 

@@ -59,16 +59,56 @@ const Dashboard = () => {
       navigate("/login");
     }
   }, []);
+
+  const [editCommentId, setEditCommentId] = useState<number | null>(null); // Track which comment is being edited
+  const [editedComment, setEditedComment] = useState<string>(""); // Store the edited comment text
+
+  const handleEditClick = (comment: any) => {
+    setEditCommentId(comment.id); // Set the ID of the comment being edited
+    setEditedComment(comment.comment); // Pre-fill the input with the current comment
+  };
+
+  const handleSaveClick = async (commentId: number) => {
+    try {
+      const response = await api.put(`${Local.EDIT_COMMENT}/${commentId}`, {
+        comment: editedComment,
+      });
+      if (response.status === 200) {
+        toast.success("Comment updated");
+        setEditCommentId(null); // Exit edit mode
+      }
+    } catch (error) {
+      toast.error("Failed to update comment");
+    }
+  };
+
+  const [comments, setComments] = useState([]);
   const token = localStorage.getItem("token");
   const [getWave, setGetWave] = useState<any>({});
   const [getFriend, setGetFriend] = useState<any>({});
-  const [show, setShow] = useState<any>(0);
+  // const [getComments, setGetComments] = useState<any>([]);
+  // const [id, setId] = useState<any>("");
 
+  const getWaveComments = async (id: any) => {
+    try {
+      console.log("Fetching comments for ID:", id);
+      const response = await api.get(`${Local.GET_COMMENT}/${id}`);
+
+      setComments(response.data);
+      return response.data;
+    } catch (error) {
+      console.error("Error while fetching comments:", error);
+      return;
+    }
+  };
+
+  console.log(">", comments);
   const {
     data: wavesDetail,
     error,
     isLoading,
-    refetch,isError,
+    refetch,
+    isError,
   } = useQuery({
     queryKey: ["latestWaves"],
     queryFn: getLatestWaves,
@@ -86,61 +126,65 @@ const Dashboard = () => {
     queryFn: fetchUserDetail,
   });
 
+  // console.log("<>><", WavesComments);
+
   // Define and return the mutation
   const mutation = useMutation({
     mutationFn: async (values: any) => {
-        if (!token) {
-            throw new Error("Authentication token is missing. Please log in.");
-        }
-        try {
-            const response = await api.put(
-                `${Local.ADD_COMMENT}`,
-                values,
-                createAuthHeaders(token)
-            );
-            return response.data;
-        } catch (error: any) {
-            console.error("Error while adding comment:", error.response?.data || error.message);
-            throw new Error(error.response?.data?.message || "Failed to add comment");
-        }
+      if (!token) {
+        throw new Error("Authentication token is missing. Please log in.");
+      }
+      try {
+        const response = await api.put(
+          `${Local.ADD_COMMENT}`,
+          values,
+          createAuthHeaders(token)
+        );
+        return response.data;
+      } catch (error: any) {
+        console.error(
+          "Error while adding comment:",
+          error.response?.data || error.message
+        );
+        throw new Error(
+          error.response?.data?.message || "Failed to add comment"
+        );
+      }
     },
     onMutate: async (newComment) => {
-        // Cancel any outgoing refetches to avoid optimistic update being overwritten
-        await queryClient.cancelQueries({ queryKey: ["latestWaves"] });
-        
-        // Snapshot current data
-        const previousData = queryClient.getQueryData(["latestWaves"]);
-        
-        return { previousData };
+      // Cancel any outgoing refetches to avoid optimistic update being overwritten
+      await queryClient.cancelQueries({ queryKey: ["latestWaves"] });
+
+      // Snapshot current data
+      const previousData = queryClient.getQueryData(["latestWaves"]);
+
+      return { previousData };
     },
     onSuccess: async (data, variables) => {
-        // Force immediate invalidation and refetch
-        await queryClient.invalidateQueries({ 
-            queryKey: ["latestWaves"],
-            refetchType: 'active',
-            exact: true 
-        });
-        
-        // Force immediate refetch
-        await refetch();
-        
-        toast.success("Comment posted successfully");
+      // Force immediate invalidation and refetch
+      await queryClient.invalidateQueries({
+        queryKey: ["latestWaves"],
+        refetchType: "active",
+        exact: true,
+      });
+
+      // Force immediate refetch
+      await refetch();
+
+      toast.success("Comment posted successfully");
     },
     onError: (error: any, variables, context) => {
-        // Rollback to previous data on error
-        if (context?.previousData) {
-            queryClient.setQueryData(["latestWaves"], context.previousData);
-        }
-        toast.error(`Error: ${error.message}`);
+      // Rollback to previous data on error
+      if (context?.previousData) {
+        queryClient.setQueryData(["latestWaves"], context.previousData);
+      }
+      toast.error(`Error: ${error.message}`);
     },
     onSettled: () => {
-        // Always refetch after error or success
-        queryClient.invalidateQueries({ queryKey: ["latestWaves"] });
-    }
-});
-
-
-  
+      // Always refetch after error or success
+      queryClient.invalidateQueries({ queryKey: ["latestWaves"] });
+    },
+  });
 
   if (isLoading) {
     return <div>Loading...</div>;
@@ -165,7 +209,9 @@ const Dashboard = () => {
                 data-bs-target="#staticBackdropWave"
                 onClick={() => {
                   //modal
+                  // setId(wave?.id);
                   setGetWave(wave);
+                  getWaveComments(wave.id);
                 }}
               >
                 <div className="d-flex pb-0 border-end ">
@@ -558,13 +604,12 @@ const Dashboard = () => {
                 }}
                 onSubmit={async (values: any, { resetForm }) => {
                   try {
-                      await mutation.mutateAsync(values);
-                      resetForm();
+                    await mutation.mutateAsync(values);
+                    resetForm();
                   } catch (error) {
-                      console.error('Mutation failed:', error);
+                    console.error("Mutation failed:", error);
                   }
-              }}
-              
+                }}
               >
                 {({ setFieldValue }) => (
                   <Form className="ms-4 comment-btn">
@@ -578,7 +623,6 @@ const Dashboard = () => {
                         onClick={() => {
                           setFieldValue("waveId", getWave.id);
                           setFieldValue("userId", userDetail?.user?.id);
-                        
                         }}
                       />
                       {/* Submit Button */}
@@ -606,81 +650,127 @@ const Dashboard = () => {
               </Formik>
 
               <div
-                className="ms-4 text-secondary me-2 overflow-auto comments "
+                className="ms-4 text-secondary me-2 overflow-auto comments"
                 style={{ maxHeight: "150px" }}
               >
-               {getWave?.waveComment?.map((comment: any) => (
-  <div
-    key={comment.id}
-    className="mb-0 pb-1 flex items-center justify-between"
-    style={{
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-      padding: '8px 0',
-      borderBottom: '1px solid #eee',
-    }}
-  >
-    {/* Comment Content */}
-    <div className="flex-grow" style={{ flex: 1 }}>
-      <b>
-        {comment?.userComment?.firstName} {comment?.userComment?.lastName} :{' '}
-      </b>
-      {comment?.comment}
-    </div>
+                {getWave?.waveComment?.map((comment: any) => (
+                  <div
+                    key={comment.id}
+                    className="mb-0 pb-1 flex items-center justify-between"
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      padding: "8px 0",
+                      borderBottom: "1px solid #eee",
+                    }}
+                  >
+                    {/* Comment Content */}
+                    <div className="flex-grow" style={{ flex: 1 }}>
+                      {editCommentId === comment.id ? (
+                        // Render input for the comment being edited
+                        <input
+                          type="text"
+                          value={editedComment}
+                          onChange={(e) => setEditedComment(e.target.value)}
+                          className="form-control"
+                          style={{ fontSize: "0.875rem" }}
+                        />
+                      ) : (
+                        <b>
+                          {comment?.userComment?.firstName}{" "}
+                          {comment?.userComment?.lastName}: {comment?.comment}
+                        </b>
+                      )}
+                    </div>
 
-    {/* Action Buttons - Display only if the comment belongs to the current user */}
-    {comment?.userId === userDetail?.user?.id && (
-      <div
-        className="flex items-center gap-2 ml-4"
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '8px',
-          marginLeft: '16px',
-        }}
-      >
-        {/* Edit Button */}
-        <button
-          className="btn btn-sm text-blue-500 hover:text-blue-700"
-          style={{
-            border: 'none',
-            background: 'none',
-            padding: '4px 8px',
-            cursor: 'pointer',
-            fontSize: '0.875rem',
-          }}
-        >
-          Edit
-        </button>
-        <span className="text-gray-300">|</span>
-        {/* Delete Button */}
-        <button
-          className="btn btn-sm text-red-500 hover:text-red-700"
-          style={{
-            border: 'none',
-            background: 'none',
-            padding: '4px 8px',
-            cursor: 'pointer',
-            fontSize: '0.875rem',
-          }}
-          onClick={async () => {
-            const response = await api.delete(
-              `${Local.DELETE_COMMENT}/${comment.id}`
-            );
-            if (response.status === 200) {
-              toast.success('Comment deleted');
-            }
-          }}
-        >
-          Delete
-        </button>
-      </div>
-    )}
-  </div>
-))}
-
-
+                    {/* Action Buttons */}
+                    {comment?.userId === userDetail?.user?.id && (
+                      <div
+                        className="flex items-center gap-2 ml-4"
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "8px",
+                          marginLeft: "16px",
+                        }}
+                      >
+                        {editCommentId === comment.id ? (
+                          <>
+                            {/* Save Button */}
+                            <button
+                              className="btn btn-sm text-green-500 hover:text-green-700"
+                              style={{
+                                border: "none",
+                                background: "none",
+                                padding: "4px 8px",
+                                cursor: "pointer",
+                                fontSize: "0.875rem",
+                              }}
+                              onClick={() => handleSaveClick(comment.id)}
+                            >
+                              Save
+                            </button>
+                            <span className="text-gray-300">|</span>
+                            {/* Cancel Button */}
+                            <button
+                              className="btn btn-sm text-red-500 hover:text-red-700"
+                              style={{
+                                border: "none",
+                                background: "none",
+                                padding: "4px 8px",
+                                cursor: "pointer",
+                                fontSize: "0.875rem",
+                              }}
+                              onClick={() => setEditCommentId(null)} // Exit edit mode without saving
+                            >
+                              Cancel
+                            </button>
+                          </>
+                        ) : (
+                          <>
+                            {/* Edit Button */}
+                            <button
+                              className="btn btn-sm text-blue-500 hover:text-blue-700"
+                              style={{
+                                border: "none",
+                                background: "none",
+                                padding: "4px 8px",
+                                cursor: "pointer",
+                                fontSize: "0.875rem",
+                              }}
+                              onClick={() => handleEditClick(comment)}
+                            >
+                              Edit
+                            </button>
+                            <span className="text-gray-300">|</span>
+                            {/* Delete Button */}
+                            <button
+                              className="btn btn-sm text-red-500 hover:text-red-700"
+                              style={{
+                                border: "none",
+                                background: "none",
+                                padding: "4px 8px",
+                                cursor: "pointer",
+                                fontSize: "0.875rem",
+                              }}
+                              onClick={async () => {
+                                const response = await api.delete(
+                                  `${Local.DELETE_COMMENT}/${comment.id}`
+                                );
+                                if (response.status === 200) {
+                                  toast.success("Comment deleted");
+                                }
+                              }}
+                            >
+                              Delete
+                            </button>
+                          </>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                ))}
               </div>
             </div>
           </div>

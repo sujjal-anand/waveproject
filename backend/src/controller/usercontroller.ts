@@ -13,13 +13,16 @@ import Preference from "../models/Preference";
 import { preferences } from "joi";
 const jwtKey = Local.Secret_Key;
 
-
 export const signUp = async (req: any, res: any) => {
   try {
-    const { firstName, lastName, email, phoneNo, password, userStatus } = req.body;
+    const { firstName, lastName, email, phoneNo, password, userStatus } =
+      req.body;
 
     // Check if the user already exists, including soft-deleted users
-    const existingUser = await Users.findOne({ where: { email }, paranoid: false });
+    const existingUser = await Users.findOne({
+      where: { email },
+      paranoid: false,
+    });
 
     if (existingUser) {
       if (existingUser.deletedAt === null) {
@@ -28,10 +31,10 @@ export const signUp = async (req: any, res: any) => {
       } else {
         // User exists but was soft-deleted; restore user
         const hashedPassword = await bcrypt.hash(password, 10);
-        
+
         // Use restore() method to clear deletedAt
         await existingUser.restore();
-        
+
         // Then update other fields
         await existingUser.update({
           firstName,
@@ -43,10 +46,10 @@ export const signUp = async (req: any, res: any) => {
 
         // Fetch the updated user to confirm changes
         const updatedUser = await Users.findOne({ where: { email } });
-        
-        return res.status(200).json({ 
-          message: "User created successfully", 
-          user: updatedUser 
+
+        return res.status(200).json({
+          message: "User created successfully",
+          user: updatedUser,
         });
       }
     }
@@ -62,16 +65,16 @@ export const signUp = async (req: any, res: any) => {
       password: hashedPassword,
     });
 
-    return res.status(201).json({ message: "User created successfully", user: newUser });
+    return res
+      .status(201)
+      .json({ message: "User created successfully", user: newUser });
   } catch (error: any) {
     console.error("Error creating user:", error);
-    return res.status(500).json({ message: "Error creating user", error: error.message });
+    return res
+      .status(500)
+      .json({ message: "Error creating user", error: error.message });
   }
 };
-
-
-
-
 
 export const login = async (req: any, res: any) => {
   try {
@@ -85,9 +88,10 @@ export const login = async (req: any, res: any) => {
 
     // Check if user status is active
     if (user.status == false) {
-      return res
-        .status(401)
-        .json({ message: "Your account is not active. Please contact the administrator." });
+      return res.status(401).json({
+        message:
+          "Your account is not active. Please contact the administrator.",
+      });
     }
 
     // Verify password
@@ -121,12 +125,11 @@ export const login = async (req: any, res: any) => {
   }
 };
 
-
-
 export const inviteFriend = async (req: any, res: any) => {
   console.log(req?.body); // Log the incoming request body
   const { body } = req; // Accept array of objects with fullname, emails, and message
   const senderId = req?.user?.id;
+  const { email: userEmail } = req?.user; // Extract the email of the logged-in user
 
   const checkEmailExists = async (email: string) => {
     // Find the user by email
@@ -152,13 +155,25 @@ export const inviteFriend = async (req: any, res: any) => {
       console.error(`Error sending email to ${to}:`, error);
     }
   };
+
   try {
+    // Validate the body to ensure user is not inviting themselves
+    const isInvitingSelf = body.some(
+      (item: { emails: string }) => item.emails === userEmail
+    );
+    if (isInvitingSelf) {
+      return res
+        .status(400)
+        .json({ message: "User cannot invite themselves." });
+    }
+
     const promises = body.map(
       async (item: { fullname: string; emails: string; message: string }) => {
         const { emails: email } = item;
         const user = await checkEmailExists(email);
         let token: string;
         let invitationLink: string;
+
         if (user) {
           // If email exists, include the user's ID in the token
           await Friends.create({
@@ -218,7 +233,6 @@ export const addFriendLogin = async (req: any, res: any) => {
     // Destructure email from req.body
     const { email } = req?.body;
     console.log(">?", req?.user);
-
     console.log("<<<", req?.body);
 
     // Check if the email matches the logged-in user's email
@@ -232,6 +246,24 @@ export const addFriendLogin = async (req: any, res: any) => {
     if (!senderfriendId || !receiverfriendId) {
       return res.status(400).json({
         message: "Sender ID and Receiver ID are required.",
+      });
+    }
+
+    // Check if the user with the provided email exists and is active
+    const user = await Users.findOne({
+      where: { email },
+    });
+
+    if (!user) {
+      return res.status(404).json({
+        message: "User not found.",
+      });
+    }
+
+    // If the user is inactive, return a message
+    if (user.status === false) {
+      return res.status(403).json({
+        message: "Your account is inactive. Please contact the administrator.",
       });
     }
 
@@ -321,12 +353,12 @@ export const getUserDetails = async (req: any, res: any) => {
       },
     });
 
-  // Fetch waves for the current user
-  const userWaves = await Waves.findAll({
-    where: {
-      userId: id,
-    },
-  });
+    // Fetch waves for the current user
+    const userWaves = await Waves.findAll({
+      where: {
+        userId: id,
+      },
+    });
 
     // If no friends, return user details with empty friends and waves arrays
     if (!friends || friends.length === 0) {
@@ -356,8 +388,6 @@ export const getUserDetails = async (req: any, res: any) => {
       },
     });
 
-  
-
     // Fetch waves for all friends
     const friendWaves = await Waves.findAll({
       where: {
@@ -380,7 +410,6 @@ export const getUserDetails = async (req: any, res: any) => {
     return res.status(500).json({ message: "Server error", error });
   }
 };
-
 
 export const createWave = async (req: any, res: any) => {
   try {
@@ -598,7 +627,6 @@ export const latestWaves = async (req: any, res: any) => {
     });
   }
 };
-
 
 export const addComment = async (req: any, res: any) => {
   try {
@@ -829,26 +857,88 @@ export const getUserWaves = async (req: any, res: any) => {
   }
 };
 
-
 export const deleteComment = async (req: any, res: any) => {
   const { id } = req.params; // Get the comment ID from the request params
 
   try {
     // Attempt to find the comment and delete it
-    const comment = await Comments.findOne({where:{id}}); // Find the comment by primary key (ID)
+    const comment = await Comments.findOne({ where: { id } }); // Find the comment by primary key (ID)
 
     if (!comment) {
       // If the comment doesn't exist, send a 404 response
-      return res.status(404).json({ message: 'Comment not found' });
+      return res.status(404).json({ message: "Comment not found" });
     }
 
     // If the comment exists, destroy it (delete it from the database)
     await comment.destroy();
 
     // Send a success response
-    res.status(200).json({ message: 'Comment deleted successfully' });
+    res.status(200).json({ message: "Comment deleted successfully" });
   } catch (error) {
-    console.error('Error deleting comment:', error);
-    res.status(500).json({ message: 'Failed to delete comment' });
+    console.error("Error deleting comment:", error);
+    res.status(500).json({ message: "Failed to delete comment" });
+  }
+};
+
+export const getWaveCommentsById = async (req: any, res: any) => {
+  try {
+    const { id } = req.params; // Extract the ID from the request parameters
+
+    if (!id) {
+      return res.status(400).json({ error: "ID parameter is required" });
+    }
+
+    // Fetch comments with the given ID
+    const waveComments = await Waves.findAll({
+      where: { id }, // Sequelize query to find records where id matches
+    });
+
+    // Check if comments are found
+    // if (waveComments.length === 0) {
+    //   return res.status(404).json({ message: "No comments found for this ID" });
+    // }
+
+    // Respond with the fetched comments
+    res.status(200).json({ data: waveComments });
+  } catch (error) {
+    console.error("Error fetching comments:", error);
+    res
+      .status(500)
+      .json({ error: "An error occurred while fetching comments" });
+  }
+};
+
+export const editWaveComment = async (req: any, res: any) => {
+  const { id } = req.params; // Extract the comment ID from params
+  const { comment } = req.body; // Extract the updated comment text from the body
+
+  try {
+    // Find the comment by ID using `findOne`
+    const existingComment = await Comments.findOne({ where: { id } });
+
+    if (!existingComment) {
+      return res.status(404).json({ message: "Comment not found" });
+    }
+
+    // Update the comment using `update`
+    await Comments.update(
+      { comment }, // Fields to update
+      { where: { id } } // Where clause
+    );
+
+    // Fetch the updated comment
+    const updatedComment = await Comments.findOne({ where: { id } });
+
+    // Return success response
+    return res.status(200).json({
+      message: "Comment updated successfully",
+      updatedComment,
+    });
+  } catch (error: any) {
+    console.error("Error updating comment:", error);
+    return res.status(500).json({
+      message: "An error occurred while updating the comment",
+      error: error.message,
+    });
   }
 };

@@ -9,15 +9,16 @@ import { useNavigate } from "react-router-dom";
 
 const Invitefriends = () => {
   const navigate = useNavigate();
+  const [forms, setForms] = useState([
+    { id: Date.now(), values: {}, isValid: false },
+  ]);
+  const [isLoading, setIsLoading] = useState(false); // State to track loading
+
   useEffect(() => {
     if (!localStorage.getItem("token")) {
       navigate("/login");
     }
   }, []);
-  const [forms, setForms] = useState([
-    { id: Date.now(), values: {}, isValid: false },
-  ]);
-  const [isLoading, setIsLoading] = useState(false); // State to track loading
 
   const initialValues = {
     fullname: "",
@@ -36,8 +37,11 @@ const Invitefriends = () => {
   const handleAddForm = () => {
     setForms([...forms, { id: Date.now(), values: {}, isValid: false }]);
   };
+  const handleRemoveForm = (index: any) => {
+    setForms(forms.filter((_, i) => i !== index));
+  };
 
-  const handleFormChange = (index: number, values: any, isValid: boolean) => {
+  const handleFormChange = (index: any, values: any, isValid: any) => {
     const updatedForms = [...forms];
     updatedForms[index] = { ...updatedForms[index], values, isValid };
     setForms(updatedForms);
@@ -65,9 +69,10 @@ const Invitefriends = () => {
           createAuthHeaders(token)
         );
         toast.success("Friends invited");
-        navigate("/app/dashboard");
+        navigate("/app/friends");
       } catch (error: any) {
-        toast.error("Error:", error.response?.data || error.message);
+        console.log(error);
+        toast.error("Error:", error.response?.data.message || error.message);
       } finally {
         setIsLoading(false); // Set loading to false after submission
       }
@@ -95,9 +100,7 @@ const Invitefriends = () => {
             cursor: "pointer",
             color: "#333",
           }}
-          onClick={() => {
-            navigate(-1);
-          }}
+          onClick={() => navigate(-1)}
         >
           ←
         </span>
@@ -105,8 +108,8 @@ const Invitefriends = () => {
       </div>
 
       <p style={{ fontSize: "16px", color: "#666", marginBottom: "20px" }}>
-        Invite some friends, Jasmine, show them your Waves, and let's see what
-        they can do!
+        Invite some friends, show them your Waves, and let's see what they can
+        do!
       </p>
 
       {/* Main White Container */}
@@ -289,6 +292,7 @@ const Invitefriends = () => {
           <button
             type="button"
             onClick={handleSubmitAll}
+            disabled={isLoading} // Disable button while loading
             style={{
               backgroundColor: "#475569",
               color: "#fff",
@@ -296,7 +300,7 @@ const Invitefriends = () => {
               borderRadius: "8px",
               padding: "12px 32px",
               fontSize: "16px",
-              cursor: "pointer",
+              cursor: isLoading ? "not-allowed" : "pointer",
               fontWeight: "500",
               display: "flex",
               alignItems: "center",

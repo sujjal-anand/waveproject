@@ -60,6 +60,11 @@ const AdminDashboard = () => {
     ],
   };
 
+  const handleLogout = () => {
+    localStorage.removeItem("adminToken");
+    navigate("/adminLogin");
+  };
+
   if (isLoading) {
     return <div>Loading...</div>;
   }
@@ -70,12 +75,26 @@ const AdminDashboard = () => {
 
   return (
     <div className="bg-gray-50 dark:bg-gray-900 p-6 container-fluid">
+      {/* Logout Button */}
+      <button
+        onClick={handleLogout}
+        className="btn btn-dark rounded-3 position-fixed top-0 end-0 m-3 d-flex align-items-center justify-content-center"
+        style={{
+          width: "56px",
+          height: "56px",
+          borderRadius: "12px", // Adjust this value for more/less rounding
+        }}
+        aria-label="Logout"
+      >
+        <i className="bi bi-box-arrow-right"></i>
+      </button>
+
       {/* Header Section */}
       <header className="mb-8">
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
           Dashboard
         </h1>
-        <p className="text-gray-500 dark:text-gray-400 mt-1">Overview</p>
+        <p className="text-gray-500 dark:text-gray-400 mt-1">Hello Admin</p>
       </header>
 
       <div className="row g-4">
