@@ -27,7 +27,7 @@ class Users extends Model {
   public userStatus!: string; // Active/Inactive
   public status!: boolean;
   public deleted!: string; // Indicates soft deletion
-  public deletedAt!: Date | null; // Timestamp for when the record is soft deleted
+  public deletedAt!: Date; // Timestamp for when the record is soft deleted
 }
 
 Users.init(
@@ -124,11 +124,7 @@ Users.init(
     },
     deleted: {
       type: DataTypes.STRING,
-      allowNull: true,
-    },
-    deletedAt: {
-      type: DataTypes.DATE,
-      allowNull: true,
+      defaultValue: false,
     },
   },
   {

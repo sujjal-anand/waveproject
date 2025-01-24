@@ -37,14 +37,10 @@ Waves.init(
       type: DataTypes.BOOLEAN,
       defaultValue: true,
     },
-   
+
     deleted: {
       type: DataTypes.STRING,
       allowNull: true,
-    },
-    deletedAt: {
-      type: DataTypes.DATE,
-      allowNull: true, // Set to null if not deleted
     },
   },
   {
@@ -54,7 +50,5 @@ Waves.init(
     paranoid: true, // Enables soft delete (requires deletedAt)
   }
 );
-
-
 
 export default Waves;

@@ -9,10 +9,6 @@ import { Formik, Form, Field, ErrorMessage } from "formik";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
 
-
-
-
-
 const Edituser = () => {
   const navigate = useNavigate();
   useEffect(() => {
@@ -20,32 +16,24 @@ const Edituser = () => {
       navigate("/login");
     }
   }, []);
-  const {id} = useParams()
+  const { id } = useParams();
 
   const fetchUserDetail = async () => {
     const adminToken = localStorage.getItem("adminToken");
     if (adminToken) {
-      const response = await api.get(
-        `${Local.GET_USER}/${id}`
-      );
+      const response = await api.get(`${Local.GET_USER}/${id}`);
       if (response.status !== 200) {
         throw new Error("Failed to fetch user details");
       }
       return response.data;
     }
   };
- 
-
 
   const [activeTab, setActiveTab] = useState<any>("basicDetails");
   const { data, isLoading, isError, error } = useQuery({
     queryKey: ["userDetail"],
     queryFn: fetchUserDetail,
   });
-
-
-
- 
 
   const basicDetailsSchema = Yup.object({
     firstName: Yup.string().required("First name is required"),
@@ -125,7 +113,7 @@ const Edituser = () => {
     <div>
       <p
         className="h5 pb-3 d-flex bg-secondary-subtle"
-        onClick={() => navigate("/adminDashboard")}
+        onClick={() => navigate("/manageUsers")}
       >
         <svg
           width="24"
@@ -162,17 +150,11 @@ const Edituser = () => {
           >
             My Profile
           </h1>
-         
+
           {/* Hidden file input */}
-          <input
-            type="file"
-            id="fileInput"
-            style={{ display: "none" }}
-          />
+          <input type="file" id="fileInput" style={{ display: "none" }} />
         </div>
       </div>
-
-      
 
       <div className="pt-4 mt-0 mx-2 text-secondary bg-white ps-4 rounded-bottom-2 snd-rel-div">
         <div className="container">

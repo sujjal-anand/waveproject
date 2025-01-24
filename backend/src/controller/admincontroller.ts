@@ -9,11 +9,10 @@ import Waves from "../models/Wave";
 import Comments from "../models/Comments";
 import Prefernce from "../models/Preference";
 import Preference from "../models/Preference";
-import { preferences } from "joi";
+import { date, preferences } from "joi";
 const jwtKey = Local.Secret_Key;
 
 import Admin from "../models/Admin"; // Replace with your actual Admin model import
-import Wave from "../models/Wave";
 
 export const adminSignUp = async (req: any, res: any) => {
   try {
@@ -87,7 +86,7 @@ export const adminLogin = async (req: any, res: any) => {
         id: existingAdmin.id,
         email: existingAdmin.email,
       },
-      jwtKey,
+      jwtKey
     );
 
     // Respond with the token and user details
@@ -108,7 +107,26 @@ export const adminLogin = async (req: any, res: any) => {
 // Get all users
 export const getAllUsers = async (req: any, res: any) => {
   try {
-    const users = await Users.findAll(); // Fetch all users
+    const { search } = req.query;
+
+    // Query conditions
+    const whereCondition: any = {};
+
+    // Add search condition if 'search' is provided
+    if (search) {
+      whereCondition[Op.or] = [
+        { firstName: { [Op.like]: `%${search}%` } },
+        { lastName: { [Op.like]: `%${search}%` } },
+        { email: { [Op.like]: `%${search}%` } },
+      ];
+    }
+
+    // Fetch users
+    const users = await Users.findAll({
+      where: whereCondition,
+      attributes: { exclude: ["password"] }, // Optional: exclude sensitive data
+    });
+
     return res
       .status(200)
       .json({ message: "Users retrieved successfully.", users });
@@ -121,12 +139,36 @@ export const getAllUsers = async (req: any, res: any) => {
 // Get all waves
 export const getAllWaves = async (req: any, res: any) => {
   try {
-    const waves = await Waves.findAll(); // Fetch all waves
-    return res
-      .status(200)
-      .json({ message: "Waves retrieved successfully.", waves });
+    const { search } = req.query;
+
+    // Define a search condition specifically for users
+    const searchCondition = search
+      ? {
+          [Op.or]: [
+            { firstName: { [Op.like]: `%${search}%` } },
+            { lastName: { [Op.like]: `%${search}%` } },
+          ],
+        }
+      : {};
+
+    // Fetch waves with associated users, applying user search condition
+    const waves = await Waves.findAll({
+      include: [
+        {
+          model: Users,
+          as: "userWave",
+          where: searchCondition, // Apply search condition to associated users
+          required: search ? true : false, // Use inner join if searching, else left join
+        },
+      ],
+    });
+
+    return res.status(200).json({
+      message: "Waves with associated Users retrieved successfully.",
+      waves,
+    });
   } catch (error) {
-    console.error("Error retrieving waves:", error);
+    console.error("Error retrieving waves with users:", error);
     return res.status(500).json({ message: "Internal server error." });
   }
 };
@@ -135,42 +177,60 @@ export const getAllData = async (req: any, res: any) => {
   try {
     const { id } = req.user;
 
-    // Fetch user details
-    const userDetail = await Users.findOne({ where: { id } });
+    // Fetch user details (only non-deleted users)
+    const userDetail = await Users.findOne({
+      where: {
+        id,
+        deletedAt: null,
+      },
+    });
 
-    // Fetch all waves from the database
-    const waves = await Wave.findAll();
+    // Fetch active and total waves with precise Sequelize conditions
+    const wavesData = await Waves.findAndCountAll({
+      where: {
+        deletedAt: null,
+        status: {
+          [Op.or]: [true, false], // Include both active and inactive waves
+        },
+      },
+      attributes: ["id", "status"], // Only fetch necessary attributes
+    });
 
-    // Count active, inactive, and total waves
-    const activeCount1 = waves.filter(
+    // Fetch active and total users with precise Sequelize conditions
+    const usersData = await Users.findAndCountAll({
+      where: {
+        deletedAt: null,
+        status: {
+          [Op.or]: [true, false], // Include both active and inactive users
+        },
+      },
+      attributes: ["id", "status"], // Only fetch necessary attributes
+    });
+
+    // Count waves by status
+    const activeWaves = wavesData.rows.filter(
       (wave: any) => wave.status === true
     ).length;
-    const inactiveCount1 = waves.filter(
+    const inactiveWaves = wavesData.rows.filter(
       (wave: any) => wave.status === false
     ).length;
-    const totalWaves = waves.length;
 
-    // Fetch all users from the database
-    const users = await Users.findAll();
-
-    // Count active, inactive, and total users
-    const activeCount2 = users.filter(
+    // Count users by status
+    const activeUsers = usersData.rows.filter(
       (user: any) => user.status === true
     ).length;
-    const inactiveCount2 = users.filter(
+    const inactiveUsers = usersData.rows.filter(
       (user: any) => user.status === false
     ).length;
-    const totalUsers = users.length;
 
-    // Return the counts
     return res.status(200).json({
-      activeWaves: activeCount1,
-      inactiveWaves: inactiveCount1,
-      totalWaves: totalWaves,
-      activeUsers: activeCount2,
-      inactiveUsers: inactiveCount2,
-      totalUsers: totalUsers,
-      userDetail: userDetail,
+      activeWaves,
+      inactiveWaves,
+      totalWaves: wavesData.count,
+      activeUsers,
+      inactiveUsers,
+      totalUsers: usersData.count,
+      userDetail,
     });
   } catch (error) {
     console.error("Error retrieving data:", error);
@@ -183,16 +243,16 @@ export const getUser = async (req: any, res: any) => {
   const { id } = req.params;
 
   try {
-      const user = await Users.findByPk(id); // Assuming you're using Sequelize
+    const user = await Users.findByPk(id); // Assuming you're using Sequelize
 
-      if (!user) {
-          return res.status(404).json({ message: 'User not found' });
-      }
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
 
-      res.status(200).json(user);
+    res.status(200).json(user);
   } catch (error) {
-      console.error('Error finding user:', error);
-      res.status(500).json({ message: 'Internal server error' });
+    console.error("Error finding user:", error);
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 
@@ -201,20 +261,37 @@ export const editUser = async (req: any, res: any) => {
   const { id } = req?.params;
 
   try {
-      const user = await Users.findByPk(id);
+    const user = await Users.findByPk(id);
 
-      if (!user) {
-          return res.status(404).json({ message: 'User not found' });
-      }
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
 
-      await user.update(req?.body ); // Update user details
-      res.status(200).json({ message: 'User updated successfully', user });
+    await user.update(req?.body); // Update user details
+    res.status(200).json({ message: "User updated successfully", user });
   } catch (error) {
-      console.error('Error updating user:', error);
-      res.status(500).json({ message: 'Internal server error' });
+    console.error("Error updating user:", error);
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 
+export const editWave = async (req: any, res: any) => {
+  const { id } = req?.params;
+
+  try {
+    const wave = await Waves.findByPk(id);
+
+    if (!wave) {
+      return res.status(404).json({ message: "wave not found" });
+    }
+
+    await wave.update(req?.body); // Update user details
+    res.status(200).json({ message: "wave updated successfully", wave });
+  } catch (error) {
+    console.error("Error updating wave:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
 
 export const deleteUser = async (req: any, res: any) => {
   const { id } = req.params;
@@ -224,65 +301,96 @@ export const deleteUser = async (req: any, res: any) => {
     const user = await Users.findByPk(id);
 
     if (!user) {
-      return res.status(404).json({ message: 'User not found' });
+      return res.status(404).json({ message: "User not found" });
     }
 
-    // Get the current timestamp
-    const deletedAt = new Date();
+    // Destroy the user (this will trigger the soft delete because of 'paranoid: true')
+    await user.destroy();
 
-    // Update the user's 'deleted' status and 'deletedAt' timestamp
-    await user.update({
-      deleted: true,
-      deletedAt: deletedAt,
+    // Destroy related records in the 'waves' table
+    await Waves.destroy({
+      where: { userId: id },
     });
 
-    // Update related records in the 'wave' table
-    await Wave.update(
-      { 
-        deleted: true,
-        deletedAt: deletedAt,
+    // Destroy related records in the 'friends' table
+    await Friends.destroy({
+      where: {
+        [Op.or]: [{ senderFriendId: id }, { receiverFriendId: id }],
       },
-      { where: { userId: id } }
-    );
+    });
 
-    // Update related records in the 'friends' table
-    await Friends.update(
-      { 
-        deleted: true,
-        deletedAt: deletedAt,
-      },
-      {
-        where: {
-          [Op.or]: [
-            { senderFriendId: id },
-            { receiverFriendId: id },
-          ],
-        },
-      }
-    );
+    // Destroy related records in the 'comments' table
+    await Comments.destroy({
+      where: { userId: id },
+    });
 
-    // Update related records in the 'comments' table
-    await Comments.update(
-      { 
-        deleted: true,
-        deletedAt: deletedAt,
-      },
-      { where: { userId: id } }
-    );
+    // Destroy related records in the 'preference' table
+    await Preference.destroy({
+      where: { userId: id },
+    });
 
-    // Update related records in the 'preference' table
-    await Preference.update(
-      { 
-        deleted: true,
-        deletedAt: deletedAt,
-      },
-      { where: { userId: id } }
-    );
-
-    res.status(200).json({ message: 'User and related records deleted successfully' });
+    // Send a response indicating that the deletion was successful
+    res
+      .status(200)
+      .json({ message: "User and related records deleted successfully" });
   } catch (error) {
-    console.error('Error deleting user:', error);
-    res.status(500).json({ message: 'Internal server error' });
+    console.error("Error deleting user:", error);
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 
+export const getWave = async (req: any, res: any) => {
+  const { id } = req.params;
+
+  try {
+    const wave = await Waves.findByPk(id, {
+      include: [
+        {
+          model: Users, // Assuming Users is the related model
+          as: "userWave", // Make sure this alias matches the one you have in the association
+        },
+      ],
+    });
+    if (!wave) {
+      return res.status(404).json({ message: "Wave not found" });
+    }
+
+    res.status(200).json(wave);
+  } catch (error) {
+    console.error("Error finding Wave:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+export const deleteWave = async (req: any, res: any) => {
+  const { id } = req.params;
+
+  try {
+    // Find the user by ID
+    const wave = await Waves.findByPk(id);
+
+    if (!wave) {
+      return res.status(404).json({ message: "wave not found" });
+    }
+
+    // Destroy the user (this will trigger the soft delete because of 'paranoid: true')
+
+    // Destroy related records in the 'waves' table
+    await wave.destroy();
+
+    // Destroy related records in the 'comments' table
+    await Comments.destroy({
+      where: { waveId: id },
+    });
+
+    // Destroy related records in the 'preference' table
+
+    // Send a response indicating that the deletion was successful
+    res
+      .status(200)
+      .json({ message: "User and related records deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting user:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};

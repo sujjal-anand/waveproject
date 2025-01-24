@@ -23,11 +23,15 @@ import {
 import {
   adminLogin,
   adminSignUp,
+  deleteUser,
+  deleteWave,
   editUser,
+  editWave,
   getAllData,
   getAllUsers,
   getAllWaves,
   getUser,
+  getWave,
 } from "../controller/admincontroller";
 const userRoutes = Router();
 
@@ -59,7 +63,11 @@ userRoutes.post("/adminLogin", adminLogin);
 userRoutes.get("/getAllData", JWT, getAllData);
 userRoutes.get("/getAllUsers", getAllUsers);
 userRoutes.get("/getAllWaves", getAllWaves);
-userRoutes.get("/getUser/:id",getUser)
-userRoutes.put("/editUser/:id",editUser)
+userRoutes.get("/getUser/:id", getUser);
+userRoutes.get("/getWave/:id", getWave);
+userRoutes.put("/editUser/:id", editUser);
+userRoutes.delete("/deleteUser/:id", deleteUser);
+userRoutes.put("/editWave/:id", editWave);
+userRoutes.delete("/deleteWave/:id", deleteWave);
 
 export default userRoutes;

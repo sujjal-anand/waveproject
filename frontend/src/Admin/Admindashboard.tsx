@@ -79,7 +79,12 @@ const AdminDashboard = () => {
       </header>
 
       <div className="row g-4">
-        <div className="col-12 col-md-6 col-lg-3">
+        <div
+          className="col-12 col-md-6 col-lg-3"
+          onClick={() => {
+            navigate("/manageUsers");
+          }}
+        >
           <div
             className="card shadow-sm h-100"
             style={{
@@ -97,7 +102,12 @@ const AdminDashboard = () => {
             </div>
           </div>
         </div>
-        <div className="col-12 col-md-6 col-lg-3">
+        <div
+          className="col-12 col-md-6 col-lg-3"
+          onClick={() => {
+            navigate("/manageUsers");
+          }}
+        >
           <div
             className="card shadow-sm h-100"
             style={{
@@ -115,7 +125,12 @@ const AdminDashboard = () => {
             </div>
           </div>
         </div>
-        <div className="col-12 col-md-6 col-lg-3">
+        <div
+          className="col-12 col-md-6 col-lg-3"
+          onClick={() => {
+            navigate("/manageUsers");
+          }}
+        >
           <div
             className="card shadow-sm h-100"
             style={{
@@ -133,7 +148,12 @@ const AdminDashboard = () => {
             </div>
           </div>
         </div>
-        <div className="col-12 col-md-6 col-lg-3">
+        <div
+          className="col-12 col-md-6 col-lg-3"
+          onClick={() => {
+            navigate("/manageWaves");
+          }}
+        >
           <div
             className="card shadow-sm h-100"
             style={{

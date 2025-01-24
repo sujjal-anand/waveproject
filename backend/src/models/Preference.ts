@@ -142,10 +142,6 @@ Prefernce.init(
       type: DataTypes.STRING,
       allowNull: true,
     },
-    deletedAt: {
-      type: DataTypes.DATE,
-      allowNull: true,
-    },
   },
   {
     sequelize,
@@ -158,4 +154,3 @@ Prefernce.init(
 // Define associations
 
 export default Prefernce;
-

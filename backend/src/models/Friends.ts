@@ -4,43 +4,37 @@ import Users from "./Users";
 
 class Friends extends Model {
   public id!: number;
-  public senderfriendId!:number;
-  public receiverfriendId!:number;
+  public senderfriendId!: number;
+  public receiverfriendId!: number;
   public status!: boolean;
   public deleted!: string; // Indicates soft deletion
-  public deletedAt!: Date | null; // Timestamp for when the record is soft deleted
+  public deletedAt!: Date; // Timestamp for when the record is soft deleted
 }
 
-Friends.init({
+Friends.init(
+  {
     id: {
-        type: DataTypes.INTEGER,
-        autoIncrement: true,
-        allowNull: false,
-        primaryKey: true,
-      },
-      status: {
-        type: DataTypes.BOOLEAN,
-        defaultValue: false,
-      },
-    
-      deleted: {
-        type: DataTypes.STRING,
-        allowNull: true,
-      },
-      deletedAt: {
-        type: DataTypes.DATE,
-        allowNull: true, // Set to null if not deleted
-      },
-    
-},{
+      type: DataTypes.INTEGER,
+      autoIncrement: true,
+      allowNull: false,
+      primaryKey: true,
+    },
+    status: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+    },
+
+    deleted: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+  },
+  {
     sequelize,
     tableName: "Friends",
     timestamps: true, // Automatically add createdAt and updatedAt fields
     paranoid: true, // Enables soft delete (requires deletedAt)
-})
+  }
+);
 
-
-
-
-
-export default Friends
+export default Friends;
